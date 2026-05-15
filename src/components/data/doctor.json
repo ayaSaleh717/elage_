@@ -1,0 +1,100 @@
+{
+  "doctors": [
+    {
+      "id": 1,
+      "name": "د. أحمد محمد",
+      "specialty": "طب القلب",
+      "rating": 4.6,
+      "reviews": 142,
+      "location": "جبله",
+      "price": 150,
+      "available": true,
+      "lat": 36.8065,
+      "lng": 5.7600
+    },
+    {
+      "id": 2,
+      "name": "د. سارة العلي",
+      "specialty": "طب الأطفال",
+      "rating": 4.8,
+      "reviews": 98,
+      "location": "اللائقيه",
+      "price": 120,
+      "available": true,
+      "lat": 36.8120,
+      "lng": 5.7680
+    },
+    {
+      "id": 3,
+      "name": "د. خالد الحسن",
+      "specialty": "طب الأسرة",
+      "rating": 4.7,
+      "reviews": 210,
+      "location": "جبله",
+      "price": 100,
+      "available": false,
+      "lat": 36.7990,
+      "lng": 5.7530
+    },
+    {
+      "id": 4,
+      "name": "د. فاطمة الزهراء",
+      "specialty": "الأمراض الجلدية",
+      "rating": 4.9,
+      "reviews": 175,
+      "location": "جبله",
+      "price": 130,
+      "available": true,
+      "lat": 36.8030,
+      "lng": 5.7720
+    },
+    {
+      "id": 5,
+      "name": "د. عمر السعيد",
+      "specialty": "طب العيون",
+      "rating": 4.6,
+      "reviews": 89,
+      "location": "اللائقيه",
+      "price": 140,
+      "available": true,
+      "lat": 36.8150,
+      "lng": 5.7550
+    },
+    {
+      "id": 6,
+      "name": "د. نورة الفهد",
+      "specialty": "طب الأعصاب",
+      "rating": 4.8,
+      "reviews": 120,
+      "location": "جبله",
+      "price": 200,
+      "available": true,
+      "lat": 36.8080,
+      "lng": 5.7480
+    },
+    {
+      "id": 7,
+      "name": "د. ماجد العتيبي",
+      "specialty": "جراحة عامة",
+      "rating": 4.5,
+      "reviews": 67,
+      "location": "اللائقيه",
+      "price": 180,
+      "available": false,
+      "lat": 36.8200,
+      "lng": 5.7650
+    },
+    {
+      "id": 8,
+      "name": "د. هند الشمري",
+      "specialty": "أمراض نساء",
+      "rating": 4.9,
+      "reviews": 195,
+      "location": "اللائقيه",
+      "price": 160,
+      "available": true,
+      "lat": 36.7950,
+      "lng": 5.7700
+    }
+  ]
+}
