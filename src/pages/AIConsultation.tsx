@@ -460,23 +460,23 @@ const AIConsultation = () => {
     <div className="min-h-screen bg-gradient-to-b from-slate-50 via-white to-slate-50/50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950/50 flex flex-col">
       {/* Header */}
       <div className="sticky top-0 z-40 backdrop-blur-xl bg-white/90 dark:bg-slate-900/90 border-b border-slate-200/60 dark:border-slate-700/60 shadow-sm shadow-slate-200/20 dark:shadow-slate-900/20">
-        <div className="container max-w-5xl flex items-center justify-between py-4 px-4 lg:px-6">
-          <div className="flex items-center gap-4">
+        <div className="container max-w-5xl flex items-center justify-between py-3 sm:py-4 px-3 sm:px-4 lg:px-6">
+          <div className="flex items-center gap-2 sm:gap-4">
             <div className="relative">
-              <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-primary via-teal-500 to-emerald-400 flex items-center justify-center shadow-xl shadow-primary/30 animate-pulse-slow">
-                <Brain className="w-6 h-6 text-white" />
+              <div className="w-9 h-9 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-gradient-to-br from-primary via-teal-500 to-emerald-400 flex items-center justify-center shadow-xl shadow-primary/30 animate-pulse-slow">
+                <Brain className="w-4 h-4 sm:w-6 sm:h-6 text-white" />
               </div>
-              <div className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-emerald-500 border-2 border-white dark:border-slate-900 animate-ping opacity-75" />
+              <div className="absolute -bottom-1 -right-1 w-3 h-3 sm:w-4 sm:h-4 rounded-full bg-emerald-500 border-2 border-white dark:border-slate-900 animate-ping opacity-75" />
             </div>
             <div>
-              <h1 className="font-display font-bold text-foreground text-lg flex items-center gap-2">
+              <h1 className="font-display font-bold text-foreground text-sm sm:text-lg flex items-center gap-1 sm:gap-2">
                 المساعد الطبي الذكي
-                <div className="flex items-center gap-1">
+                <div className="hidden sm:flex items-center gap-1">
                   <Sparkles className="w-4 h-4 text-amber-500 animate-spin-slow" />
                   <Zap className="w-4 h-4 text-primary animate-pulse" />
                 </div>
               </h1>
-              <div className="flex items-center gap-3 text-xs text-muted-foreground mt-0.5">
+              <div className="hidden sm:flex items-center gap-3 text-xs text-muted-foreground mt-0.5">
                 <span className="flex items-center gap-1">
                   <Shield className="w-3 h-3" />
                   تشخيص أولي
@@ -492,48 +492,50 @@ const AIConsultation = () => {
                   محادثة ذكية
                 </span>
               </div>
+              <p className="sm:hidden text-[10px] text-muted-foreground">تشخيص أولي • متاح 24/7</p>
             </div>
           </div>
           <Link to="/">
-            <Button variant="outline" size="sm" className="rounded-xl border-slate-200 dark:border-slate-700 text-muted-foreground hover:text-foreground hover:border-primary/30 hover:bg-primary/5 gap-2 transition-all group">
-              <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
-              <span>العودة للرئيسية</span>
+            <Button variant="outline" size="sm" className="rounded-xl border-slate-200 dark:border-slate-700 text-muted-foreground hover:text-foreground hover:border-primary/30 hover:bg-primary/5 gap-1 sm:gap-2 transition-all group text-xs sm:text-sm px-2 sm:px-3">
+              <ArrowRight className="w-3.5 h-3.5 sm:w-4 sm:h-4 group-hover:translate-x-0.5 transition-transform" />
+              <span className="hidden sm:inline">العودة للرئيسية</span>
+              <span className="sm:hidden">الرئيسية</span>
             </Button>
           </Link>
         </div>
       </div>
 
       {/* Chat Area */}
-      <div className="flex-1 container max-w-5xl py-6 px-4 lg:px-6 flex flex-col">
+      <div className="flex-1 container max-w-5xl py-3 sm:py-6 px-2 sm:px-4 lg:px-6 flex flex-col">
         {/* Welcome Card */}
         {messages.length === 1 && (
-          <div className="mb-6 space-y-4">
+          <div className="mb-4 sm:mb-6 space-y-3 sm:space-y-4">
             <div className="animate-fade-in">
-              <div className="bg-gradient-to-br from-primary/5 via-teal-50/50 to-emerald-50/30 dark:from-primary/10 dark:via-teal-900/20 dark:to-emerald-900/10 rounded-2xl border border-primary/20 dark:border-primary/30 p-6 shadow-sm">
-                <div className="flex items-start gap-4">
-                  <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-primary/20 to-teal-100 dark:from-primary/30 dark:to-teal-900 flex items-center justify-center shadow-md">
-                    <Heart className="w-6 h-6 text-primary" />
+              <div className="bg-gradient-to-br from-primary/5 via-teal-50/50 to-emerald-50/30 dark:from-primary/10 dark:via-teal-900/20 dark:to-emerald-900/10 rounded-xl sm:rounded-2xl border border-primary/20 dark:border-primary/30 p-4 sm:p-6 shadow-sm">
+                <div className="flex items-start gap-3 sm:gap-4">
+                  <div className="w-10 h-10 sm:w-14 sm:h-14 rounded-lg sm:rounded-xl bg-gradient-to-br from-primary/20 to-teal-100 dark:from-primary/30 dark:to-teal-900 flex items-center justify-center shadow-md shrink-0">
+                    <Heart className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
                   </div>
-                  <div className="flex-1">
-                    <h3 className="font-display font-bold text-foreground text-sm mb-2">كيف يعمل المساعد الطبي الذكي؟</h3>
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs text-muted-foreground">
-                      <div className="flex items-center gap-2 p-2.5 rounded-lg bg-white/50 dark:bg-slate-800/50">
-                        <div className="w-7 h-7 rounded-lg bg-primary/10 dark:bg-primary/20 flex items-center justify-center">
-                          <span className="text-xs font-bold text-primary">1</span>
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-display font-bold text-foreground text-xs sm:text-sm mb-2">كيف يعمل المساعد الطبي الذكي؟</h3>
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-3 text-xs text-muted-foreground">
+                      <div className="flex items-center gap-2 p-2 sm:p-2.5 rounded-lg bg-white/50 dark:bg-slate-800/50">
+                        <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-lg bg-primary/10 dark:bg-primary/20 flex items-center justify-center shrink-0">
+                          <span className="text-[10px] sm:text-xs font-bold text-primary">1</span>
                         </div>
-                        <span>صف أعراضك بالتفصيل</span>
+                        <span className="text-[11px] sm:text-xs">صف أعراضك بالتفصيل</span>
                       </div>
-                      <div className="flex items-center gap-2 p-2.5 rounded-lg bg-white/50 dark:bg-slate-800/50">
-                        <div className="w-7 h-7 rounded-lg bg-primary/10 dark:bg-primary/20 flex items-center justify-center">
-                          <span className="text-xs font-bold text-primary">2</span>
+                      <div className="flex items-center gap-2 p-2 sm:p-2.5 rounded-lg bg-white/50 dark:bg-slate-800/50">
+                        <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-lg bg-primary/10 dark:bg-primary/20 flex items-center justify-center shrink-0">
+                          <span className="text-[10px] sm:text-xs font-bold text-primary">2</span>
                         </div>
-                        <span>أجِب على أسئلة المتابعة</span>
+                        <span className="text-[11px] sm:text-xs">أجِب على أسئلة المتابعة</span>
                       </div>
-                      <div className="flex items-center gap-2 p-2.5 rounded-lg bg-white/50 dark:bg-slate-800/50">
-                        <div className="w-7 h-7 rounded-lg bg-primary/10 dark:bg-primary/20 flex items-center justify-center">
-                          <span className="text-xs font-bold text-primary">3</span>
+                      <div className="flex items-center gap-2 p-2 sm:p-2.5 rounded-lg bg-white/50 dark:bg-slate-800/50">
+                        <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-lg bg-primary/10 dark:bg-primary/20 flex items-center justify-center shrink-0">
+                          <span className="text-[10px] sm:text-xs font-bold text-primary">3</span>
                         </div>
-                        <span>احصل على تشخيص أولي</span>
+                        <span className="text-[11px] sm:text-xs">احصل على تشخيص أولي</span>
                       </div>
                     </div>
                   </div>
@@ -541,8 +543,8 @@ const AIConsultation = () => {
               </div>
             </div>
 
-            {/* Quick Tips */}
-            <div className="animate-fade-in" style={{ animationDelay: "100ms" }}>
+            {/* Quick Tips - hidden on mobile */}
+            <div className="hidden sm:block animate-fade-in" style={{ animationDelay: "100ms" }}>
               <div className="bg-slate-50 dark:bg-slate-900/50 rounded-2xl border border-slate-200 dark:border-slate-700 p-4">
                 <h4 className="text-xs font-semibold text-foreground mb-2 flex items-center gap-1.5">
                   <Sparkles className="w-3.5 h-3.5 text-primary" />
@@ -579,28 +581,28 @@ const AIConsultation = () => {
           </div>
         )}
 
-        <div className="flex-1 space-y-5 mb-4 overflow-y-auto max-h-[calc(100vh-220px)] px-1">
+        <div className="flex-1 space-y-4 sm:space-y-5 mb-4 overflow-y-auto max-h-[calc(100vh-180px)] sm:max-h-[calc(100vh-220px)] px-1">
           {messages.map((msg, i) => (
             <div key={i} className="animate-fade-in-up" style={{ animationDelay: `${i * 50}ms` }}>
-              <div className={`flex gap-3 ${msg.role === "user" ? "flex-row-reverse" : ""}`}>
+              <div className={`flex gap-2 sm:gap-3 ${msg.role === "user" ? "flex-row-reverse" : ""}`}>
                 {/* Avatar */}
-                <div className={`relative w-10 h-10 rounded-xl flex items-center justify-center shrink-0 shadow-md ${
+                <div className={`relative w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl flex items-center justify-center shrink-0 shadow-md ${
                   msg.role === "assistant"
                     ? "bg-gradient-to-br from-primary/20 via-teal-100/80 to-emerald-100/60 dark:from-primary/30 dark:via-teal-900/50 dark:to-emerald-900/30"
                     : "bg-gradient-to-br from-blue-100 via-blue-50 to-sky-50 dark:from-blue-900 dark:via-blue-800 dark:to-sky-900"
                 }`}>
                   {msg.role === "assistant" ? (
-                    <Bot className="w-5 h-5 text-primary" />
+                    <Bot className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
                   ) : (
-                    <User className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                    <User className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600 dark:text-blue-400" />
                   )}
                   {msg.role === "assistant" && (
-                    <div className="absolute -top-1 -right-1 w-3 h-3 rounded-full bg-emerald-500 border-2 border-white dark:border-slate-900" />
+                    <div className="absolute -top-0.5 -right-0.5 sm:-top-1 sm:-right-1 w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-emerald-500 border-2 border-white dark:border-slate-900" />
                   )}
                 </div>
 
                 {/* Message Bubble */}
-                <div className={`max-w-[85%] rounded-2xl p-4 text-sm leading-relaxed whitespace-pre-wrap shadow-sm transition-all duration-300 hover:shadow-md ${
+                <div className={`max-w-[85%] sm:max-w-[80%] rounded-xl sm:rounded-2xl p-3 sm:p-4 text-xs sm:text-sm leading-relaxed whitespace-pre-wrap shadow-sm transition-all duration-300 hover:shadow-md ${
                   msg.role === "assistant"
                     ? "bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 text-foreground rounded-tr-md hover:border-primary/30"
                     : "bg-gradient-to-br from-primary via-teal-500 to-emerald-400 text-white shadow-md shadow-primary/25 rounded-tl-md hover:shadow-primary/35"
@@ -611,41 +613,41 @@ const AIConsultation = () => {
 
               {/* Doctor Recommendations */}
               {msg.doctorRecommendation && msg.doctorRecommendation.length > 0 && (
-                <div className="mr-12 mt-4 space-y-3 animate-slide-in-right">
+                <div className="mr-8 sm:mr-12 mt-3 sm:mt-4 space-y-2 sm:space-y-3 animate-slide-in-right">
                   <div className="flex items-center justify-between">
-                    <p className="text-sm font-semibold text-foreground flex items-center gap-2">
-                      <Stethoscope className="w-4 h-4 text-primary" />
-                      الأطباء المتاحون القريبون منك:
+                    <p className="text-xs sm:text-sm font-semibold text-foreground flex items-center gap-1.5 sm:gap-2">
+                      <Stethoscope className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-primary" />
+                      الأطباء المتاحون:
                     </p>
-                    <span className="text-xs text-muted-foreground bg-slate-100 dark:bg-slate-800 px-2.5 py-1 rounded-full">
+                    <span className="text-[10px] sm:text-xs text-muted-foreground bg-slate-100 dark:bg-slate-800 px-2 py-0.5 sm:py-1 rounded-full">
                       {msg.doctorRecommendation.length} طبيب
                     </span>
                   </div>
-                  <div className="grid gap-3">
+                  <div className="grid gap-2 sm:gap-3">
                     {msg.doctorRecommendation.map((doc, idx) => (
                       <div
                         key={doc.id}
-                        className="flex items-center justify-between bg-white dark:bg-slate-800 rounded-xl p-4 border border-slate-100 dark:border-slate-700 shadow-sm hover:shadow-md hover:border-primary/30 hover:translate-x-1 transition-all duration-300 group"
+                        className="flex items-center justify-between bg-white dark:bg-slate-800 rounded-lg sm:rounded-xl p-3 sm:p-4 border border-slate-100 dark:border-slate-700 shadow-sm hover:shadow-md hover:border-primary/30 transition-all duration-300 group"
                         style={{ animationDelay: `${idx * 100}ms` }}
                       >
-                        <div className="flex items-center gap-3">
-                          <div className="relative">
-                            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary/10 via-teal-50/80 to-emerald-50/60 dark:from-primary/20 dark:via-teal-900/50 dark:to-emerald-900/30 flex items-center justify-center shadow-sm group-hover:shadow-md transition-shadow">
-                              <span className="text-sm font-bold text-primary">{doc.name.charAt(3)}</span>
+                        <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+                          <div className="relative shrink-0">
+                            <div className="w-9 h-9 sm:w-12 sm:h-12 rounded-lg sm:rounded-xl bg-gradient-to-br from-primary/10 via-teal-50/80 to-emerald-50/60 dark:from-primary/20 dark:via-teal-900/50 dark:to-emerald-900/30 flex items-center justify-center shadow-sm">
+                              <span className="text-xs sm:text-sm font-bold text-primary">{doc.name.charAt(3)}</span>
                             </div>
                             {doc.available && (
-                              <div className="absolute -bottom-1 -right-1 w-3 h-3 rounded-full bg-emerald-500 border-2 border-white dark:border-slate-900 animate-pulse" />
+                              <div className="absolute -bottom-0.5 -right-0.5 sm:-bottom-1 sm:-right-1 w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-emerald-500 border-2 border-white dark:border-slate-900 animate-pulse" />
                             )}
                           </div>
-                          <div>
-                            <p className="font-semibold text-foreground text-sm group-hover:text-primary transition-colors">{doc.name}</p>
-                            <div className="flex items-center gap-2 text-[11px] text-muted-foreground mt-1">
-                              <span className="bg-primary/10 dark:bg-primary/20 text-primary px-2 py-0.5 rounded-full font-medium">{doc.specialty}</span>
-                              <span className="flex items-center gap-1">
+                          <div className="min-w-0">
+                            <p className="font-semibold text-foreground text-xs sm:text-sm truncate">{doc.name}</p>
+                            <div className="flex flex-wrap items-center gap-1 sm:gap-2 text-[10px] sm:text-[11px] text-muted-foreground mt-0.5 sm:mt-1">
+                              <span className="bg-primary/10 dark:bg-primary/20 text-primary px-1.5 sm:px-2 py-0.5 rounded-full font-medium">{doc.specialty}</span>
+                              <span className="hidden sm:flex items-center gap-1">
                                 <MapPin className="w-3 h-3" />
                                 {doc.location}
                               </span>
-                              <span className="flex items-center gap-0.5 bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-400 px-2 py-0.5 rounded-full">
+                              <span className="flex items-center gap-0.5 bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-400 px-1.5 sm:px-2 py-0.5 rounded-full">
                                 <span>⭐</span>
                                 <span className="font-medium">{doc.rating}</span>
                               </span>
@@ -653,8 +655,8 @@ const AIConsultation = () => {
                           </div>
                         </div>
                         <Link to={`/reservation?doctor=${doc.id}`}>
-                          <Button size="sm" className="rounded-xl bg-gradient-to-br from-primary to-teal-500 hover:from-primary/90 hover:to-teal-600 text-white text-xs shadow-sm hover:shadow-md group-hover:scale-105 transition-all gap-1.5">
-                            <span>حجز موعد</span>
+                          <Button size="sm" className="rounded-lg sm:rounded-xl bg-gradient-to-br from-primary to-teal-500 hover:from-primary/90 hover:to-teal-600 text-white text-[10px] sm:text-xs shadow-sm hover:shadow-md transition-all gap-1 px-2 sm:px-3">
+                            <span>حجز</span>
                             <ChevronRight className="w-3 h-3" />
                           </Button>
                         </Link>
@@ -668,19 +670,19 @@ const AIConsultation = () => {
 
           {/* Loading */}
           {isLoading && (
-            <div className="flex gap-3 animate-fade-in">
-              <div className="relative w-10 h-10 rounded-xl flex items-center justify-center shrink-0 bg-gradient-to-br from-primary/20 via-teal-100/80 to-emerald-100/60 dark:from-primary/30 dark:via-teal-900/50 dark:to-emerald-900/30 shadow-md">
-                <Bot className="w-5 h-5 text-primary" />
-                <div className="absolute inset-0 rounded-xl border-2 border-primary/20 animate-ping opacity-50" />
+            <div className="flex gap-2 sm:gap-3 animate-fade-in">
+              <div className="relative w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl flex items-center justify-center shrink-0 bg-gradient-to-br from-primary/20 via-teal-100/80 to-emerald-100/60 dark:from-primary/30 dark:via-teal-900/50 dark:to-emerald-900/30 shadow-md">
+                <Bot className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
+                <div className="absolute inset-0 rounded-lg sm:rounded-xl border-2 border-primary/20 animate-ping opacity-50" />
               </div>
-              <div className="bg-white dark:bg-slate-800 shadow-sm border border-slate-100 dark:border-slate-700 rounded-2xl rounded-tr-md px-5 py-4">
+              <div className="bg-white dark:bg-slate-800 shadow-sm border border-slate-100 dark:border-slate-700 rounded-xl sm:rounded-2xl rounded-tr-md px-4 sm:px-5 py-3 sm:py-4">
                 <div className="flex items-center gap-2">
                   <div className="flex gap-1.5">
-                    <div className="w-2 h-2 rounded-full bg-primary animate-bounce" />
-                    <div className="w-2 h-2 rounded-full bg-primary animate-bounce" style={{ animationDelay: "0.15s" }} />
-                    <div className="w-2 h-2 rounded-full bg-primary animate-bounce" style={{ animationDelay: "0.3s" }} />
+                    <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-primary animate-bounce" />
+                    <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-primary animate-bounce" style={{ animationDelay: "0.15s" }} />
+                    <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-primary animate-bounce" style={{ animationDelay: "0.3s" }} />
                   </div>
-                  <span className="text-xs text-muted-foreground font-medium">
+                  <span className="text-[10px] sm:text-xs text-muted-foreground font-medium">
                     {typingEffect ? "يكتب..." : "يُحلل الأعراض..."}
                   </span>
                 </div>
@@ -692,19 +694,19 @@ const AIConsultation = () => {
         </div>
 
         {/* Input Area */}
-        <div className="sticky bottom-0 bg-gradient-to-t from-white via-white/95 to-transparent dark:from-slate-900 dark:via-slate-900/95 pt-4 pb-2">
+        <div className="sticky bottom-0 bg-gradient-to-t from-white via-white/95 to-transparent dark:from-slate-900 dark:via-slate-900/95 pt-3 sm:pt-4 pb-2">
           <div className="relative">
-            <div className={`flex gap-3 bg-white dark:bg-slate-800 rounded-2xl border p-2 shadow-xl transition-all duration-300 ${
+            <div className={`flex gap-2 sm:gap-3 bg-white dark:bg-slate-800 rounded-xl sm:rounded-2xl border p-1.5 sm:p-2 shadow-xl transition-all duration-300 ${
               inputError 
                 ? "border-red-300 dark:border-red-700 shadow-red-200/30 dark:shadow-red-900/30 hover:shadow-red-300/20" 
                 : "border-slate-200 dark:border-slate-700 shadow-slate-300/30 dark:shadow-slate-900/50 hover:shadow-2xl hover:shadow-primary/10"
             }`}>
               <Input
-                placeholder="اكتب أعراضك هنا... (مثال: أعاني من صداع شديد منذ يومين)"
+                placeholder="اكتب أعراضك هنا..."
                 value={input}
                 onChange={handleInputChange}
                 onKeyDown={(e) => e.key === "Enter" && handleSend()}
-                className={`h-12 border-0 bg-transparent shadow-none focus-visible:ring-0 text-sm placeholder:text-muted-foreground/60 focus:placeholder:text-transparent ${
+                className={`h-10 sm:h-12 border-0 bg-transparent shadow-none focus-visible:ring-0 text-xs sm:text-sm placeholder:text-muted-foreground/60 focus:placeholder:text-transparent ${
                   inputError ? "text-red-600 dark:text-red-400 placeholder:text-red-400/60" : ""
                 }`}
                 disabled={isLoading}
@@ -712,13 +714,13 @@ const AIConsultation = () => {
               <Button
                 onClick={handleSend}
                 size="icon"
-                className="h-12 w-12 rounded-xl bg-gradient-to-br from-primary via-teal-500 to-emerald-400 text-white shrink-0 shadow-lg shadow-primary/30 hover:shadow-xl hover:shadow-primary/40 hover:scale-105 transition-all duration-300 disabled:opacity-50 disabled:hover:scale-100"
+                className="h-10 w-10 sm:h-12 sm:w-12 rounded-lg sm:rounded-xl bg-gradient-to-br from-primary via-teal-500 to-emerald-400 text-white shrink-0 shadow-lg shadow-primary/30 hover:shadow-xl hover:shadow-primary/40 hover:scale-105 transition-all duration-300 disabled:opacity-50 disabled:hover:scale-100"
                 disabled={isLoading || !input.trim()}
               >
-                <Send className="w-5 h-5" />
+                <Send className="w-4 h-4 sm:w-5 sm:h-5" />
               </Button>
             </div>
-            <div className={`absolute -top-3 left-1/2 -translate-x-1/2 w-24 h-1 rounded-full blur-sm ${
+            <div className={`hidden sm:block absolute -top-3 left-1/2 -translate-x-1/2 w-24 h-1 rounded-full blur-sm ${
               inputError 
                 ? "bg-gradient-to-r from-red-400/40 to-red-600/40" 
                 : "bg-gradient-to-r from-primary/20 to-teal-500/20 dark:from-primary/30 dark:to-teal-500/30"
@@ -727,8 +729,8 @@ const AIConsultation = () => {
             {/* Error Message */}
             {inputError && (
               <div className="mt-2 animate-fade-in">
-                <div className="flex items-center justify-center gap-1.5 text-red-600 dark:text-red-400 text-xs font-medium bg-red-50 dark:bg-red-900/20 px-3 py-1.5 rounded-lg">
-                  <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
+                <div className="flex items-center justify-center gap-1.5 text-red-600 dark:text-red-400 text-[10px] sm:text-xs font-medium bg-red-50 dark:bg-red-900/20 px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg">
+                  <svg className="w-3 h-3 sm:w-3.5 sm:h-3.5" fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
                   </svg>
                   <span>{inputError}</span>
@@ -736,10 +738,10 @@ const AIConsultation = () => {
               </div>
             )}
           </div>
-          <div className="flex items-center justify-center gap-4 mt-3">
-            <p className="text-center text-[11px] text-muted-foreground/70 flex items-center gap-1.5">
-              <Shield className="w-3 h-3" />
-              هذا تشخيص أولي فقط ولا يغني عن زيارة الطبيب
+          <div className="flex items-center justify-center gap-2 sm:gap-4 mt-2 sm:mt-3">
+            <p className="text-center text-[9px] sm:text-[11px] text-muted-foreground/70 flex items-center gap-1">
+              <Shield className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
+              تشخيص أولي لا يغني عن زيارة الطبيب
             </p>
             <div className="hidden sm:flex items-center gap-2 text-[10px] text-muted-foreground/50">
               <Activity className="w-3 h-3" />
