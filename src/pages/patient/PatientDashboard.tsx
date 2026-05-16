@@ -4,7 +4,8 @@ import { Link, Outlet, useLocation } from "react-router-dom";
 import data from "./data.json";
 import { Button } from "@/components/ui/button";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
-import humanHeart from "@/assests/hm.png";
+
+const humanHeart = "https://scwzacvwp7mrajkx.public.blob.vercel-storage.com/assests/hm.png";
 
 const sidebarItems = [
   { icon: <LayoutDashboard className="w-4 h-4" />, label: "الإحصائيات", path: "/patient" },

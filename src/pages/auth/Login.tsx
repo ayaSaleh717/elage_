@@ -4,7 +4,8 @@ import { Input } from "@/components/ui/input";
 import { Stethoscope, Mail, Lock, ArrowLeft } from "lucide-react";
 import { useState } from "react";
 import { apiService } from "@/services/api";
-import heartbeatVideo from "@/assests/human heartbet.mp4";
+
+const heartbeatVideo = "https://scwzacvwp7mrajkx.public.blob.vercel-storage.com/assests/human%20heartbet.mp4";
 
 const Login = () => {
   const [email, setEmail] = useState("ss@gmail.com");

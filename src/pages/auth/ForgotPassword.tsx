@@ -4,7 +4,8 @@ import { Input } from "@/components/ui/input";
 import { Stethoscope, Mail, ArrowRight, CheckCircle2, FlaskConical } from "lucide-react";
 import { useState } from "react";
 import { apiService } from "@/services/api";
-import heartbeatVideo from "@/assests/human heartbet.mp4";
+
+const VIDEO_URL = "https://scwzacvwp7mrajkx.public.blob.vercel-storage.com/assests/human%20heartbet.mp4";
 
 const ForgotPassword = () => {
   const [email, setEmail] = useState("");
@@ -54,7 +55,7 @@ const ForgotPassword = () => {
           playsInline
           className="absolute inset-0 w-full h-full object-cover"
         >
-          <source src={heartbeatVideo} type="video/mp4" />
+          <source src={VIDEO_URL} type="video/mp4" />
         </video>
         <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/40 to-background" />
         <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />

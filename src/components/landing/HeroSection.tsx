@@ -1,7 +1,8 @@
 import { Button } from "@/components/ui/button";
 import { Bot, Star, ArrowLeft } from "lucide-react";
 import { Link } from "react-router-dom";
-import humanBody from "./../../assests/humanbody.png";
+
+const humanBody = "https://scwzacvwp7mrajkx.public.blob.vercel-storage.com/assests/humanbody.png";
 
 const HeroSection = () => {
   return (
