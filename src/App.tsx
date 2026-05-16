@@ -10,6 +10,7 @@ import Login from "./pages/auth/Login";
 import Register from "./pages/auth/Register";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import DoctorDashboard from "./pages/doctor/DoctorDashboard";
+import DoctorPatients from "./pages/doctor/DoctorPatients";
 import PatientDashboard from "./pages/patient/PatientDashboard";
 import DoctorsPage from "./pages/doctor/DoctorsPage";
 import Reservation from "./pages/Reservation";
@@ -37,6 +38,7 @@ const App = () => (
             <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/admin" element={<AdminDashboard />} />
             <Route path="/doctor" element={<DoctorDashboard />} />
+            <Route path="/doctor/patients" element={<DoctorPatients />} />
             <Route path="/patient" element={<PatientDashboard />}>
               <Route index element={<div>مرحباً في لوحة التحكم</div>} />
               <Route path="consultations" element={<Consultations />} />
