@@ -181,7 +181,7 @@ const DashboardLayout = ({ children, title, items, role }: DashboardLayoutProps)
 
               {/* Notifications Dropdown */}
               {notificationsOpen && (
-                <div className="absolute left-0 top-full mt-2 w-[320px] sm:w-[380px] bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-2xl z-50 overflow-hidden animate-fade-in">
+                <div className="fixed sm:absolute inset-x-3 sm:inset-x-auto sm:left-0 top-[70px] sm:top-full sm:mt-2 w-auto sm:w-[380px] bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-2xl z-50 overflow-hidden animate-fade-in">
                   {/* Header */}
                   <div className="flex items-center justify-between p-4 border-b border-slate-100 dark:border-slate-700">
                     <div className="flex items-center gap-2">
