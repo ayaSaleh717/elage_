@@ -11,12 +11,18 @@ import Register from "./pages/auth/Register";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import DoctorDashboard from "./pages/doctor/DoctorDashboard";
 import DoctorPatients from "./pages/doctor/DoctorPatients";
+import DoctorConsultations from "./pages/doctor/DoctorConsultations";
+import DoctorSchedule from "./pages/doctor/DoctorSchedule";
+import DoctorEarnings from "./pages/doctor/DoctorEarnings";
+import DoctorProfile from "./pages/doctor/DoctorProfile";
+// import DoctorMessages from "./pages/doctor/DoctorMessages";
 import PatientDashboard from "./pages/patient/PatientDashboard";
 import DoctorsPage from "./pages/doctor/DoctorsPage";
 import Reservation from "./pages/Reservation";
 import ForgotPassword from "./pages/auth/ForgotPassword";
 import ResetPassword from "./pages/auth/ResetPassword";
 import AIConsultation from "./pages/AIConsultation";
+import Notifications from "./pages/Notifications";
 import Consultations from "./pages/patient/Consultations";
 import Records from "./pages/patient/Records";
 import Profile from "./pages/patient/Profile";
@@ -39,6 +45,11 @@ const App = () => (
             <Route path="/admin" element={<AdminDashboard />} />
             <Route path="/doctor" element={<DoctorDashboard />} />
             <Route path="/doctor/patients" element={<DoctorPatients />} />
+            <Route path="/doctor/consultations" element={<DoctorConsultations />} />
+            <Route path="/doctor/schedule" element={<DoctorSchedule />} />
+            {/* <Route path="/doctor/messages" element={<DoctorMessages />} /> */}
+            <Route path="/doctor/earnings" element={<DoctorEarnings />} />
+            <Route path="/doctor/profile" element={<DoctorProfile />} />
             <Route path="/patient" element={<PatientDashboard />}>
               <Route index element={<div>مرحباً في لوحة التحكم</div>} />
               <Route path="consultations" element={<Consultations />} />
@@ -49,6 +60,7 @@ const App = () => (
             <Route path="/doctors" element={<DoctorsPage />} />
             <Route path="/reservation" element={<Reservation />} />
             <Route path="/ai-consultation" element={<AIConsultation />} />
+            <Route path="/notifications" element={<Notifications />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>

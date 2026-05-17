@@ -1,6 +1,6 @@
-import { ReactNode, useState } from "react";
+import { ReactNode, useState, useRef, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Stethoscope, ChevronLeft, Menu, X, Sun, Moon, Bell, Search } from "lucide-react";
+import { Stethoscope, ChevronLeft, Menu, X, Sun, Moon, Bell, Search, Calendar, MessageSquare, UserCheck, AlertCircle, CheckCircle2 } from "lucide-react";
 import { useTheme } from "@/components/ThemeProvider";
 
 interface SidebarItem {
@@ -25,10 +25,34 @@ const roleLabels = {
 const DashboardLayout = ({ children, title, items, role }: DashboardLayoutProps) => {
   const location = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [notificationsOpen, setNotificationsOpen] = useState(false);
   const { theme, toggleTheme } = useTheme();
+  const notifRef = useRef<HTMLDivElement>(null);
 
   const activeItem = items.find(item => location.pathname === item.path);
   const activeTitle = activeItem ? activeItem.label : title;
+
+  // Close notifications when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (notifRef.current && !notifRef.current.contains(event.target as Node)) {
+        setNotificationsOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const notifications = [
+    { id: 1, type: "appointment", title: "موعد جديد", message: "محمد سعيد حجز موعد استشارة فيديو", time: "منذ 5 دقائق", read: false, icon: Calendar },
+    { id: 2, type: "message", title: "رسالة جديدة", message: "أمل الرشيد أرسلت لك رسالة", time: "منذ 15 دقيقة", read: false, icon: MessageSquare },
+    { id: 3, type: "patient", title: "مريض جديد", message: "تم تسجيل مريض جديد: يوسف أحمد", time: "منذ ساعة", read: false, icon: UserCheck },
+    { id: 4, type: "alert", title: "تنبيه طبي", message: "سارة خالد - نتائج تحاليل تحتاج مراجعة", time: "منذ ساعتين", read: true, icon: AlertCircle },
+    { id: 5, type: "system", title: "تم تأكيد الموعد", message: "خالد الدمشقي أكد موعده ليوم الخميس", time: "منذ 3 ساعات", read: true, icon: CheckCircle2 },
+    { id: 6, type: "message", title: "رسالة جديدة", message: "نورة العلي أرسلت نتائج التحاليل", time: "أمس", read: true, icon: MessageSquare },
+  ];
+
+  const unreadCount = notifications.filter(n => !n.read).length;
 
   return (
     <div className="flex min-h-screen bg-slate-50 dark:bg-slate-950">
@@ -142,10 +166,81 @@ const DashboardLayout = ({ children, title, items, role }: DashboardLayoutProps)
             </button>
 
             {/* Notifications */}
-            <button className="relative p-2.5 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
-              <Bell className="w-[18px] h-[18px] text-slate-500 dark:text-slate-400" />
-              <div className="absolute top-2 right-2 w-2 h-2 rounded-full bg-red-500 ring-2 ring-white dark:ring-slate-900" />
-            </button>
+            <div className="relative" ref={notifRef}>
+              <button
+                onClick={() => setNotificationsOpen(!notificationsOpen)}
+                className="relative p-2.5 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+              >
+                <Bell className="w-[18px] h-[18px] text-slate-500 dark:text-slate-400" />
+                {unreadCount > 0 && (
+                  <div className="absolute top-1.5 right-1.5 w-4 h-4 rounded-full bg-red-500 ring-2 ring-white dark:ring-slate-900 flex items-center justify-center">
+                    <span className="text-[9px] font-bold text-white">{unreadCount}</span>
+                  </div>
+                )}
+              </button>
+
+              {/* Notifications Dropdown */}
+              {notificationsOpen && (
+                <div className="absolute left-0 top-full mt-2 w-[320px] sm:w-[380px] bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-2xl z-50 overflow-hidden animate-fade-in">
+                  {/* Header */}
+                  <div className="flex items-center justify-between p-4 border-b border-slate-100 dark:border-slate-700">
+                    <div className="flex items-center gap-2">
+                      <h3 className="font-bold text-foreground text-sm">الإشعارات</h3>
+                      {unreadCount > 0 && (
+                        <span className="text-[10px] bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 px-2 py-0.5 rounded-full font-medium">
+                          {unreadCount} جديد
+                        </span>
+                      )}
+                    </div>
+                    <button className="text-[10px] text-primary hover:underline font-medium">
+                      تحديد الكل كمقروء
+                    </button>
+                  </div>
+
+                  {/* Notifications List */}
+                  <div className="max-h-[400px] overflow-y-auto">
+                    {notifications.map((notif) => {
+                      const Icon = notif.icon;
+                      return (
+                        <div
+                          key={notif.id}
+                          className={`flex items-start gap-3 p-3 sm:p-4 border-b border-slate-50 dark:border-slate-700/50 hover:bg-slate-50 dark:hover:bg-slate-900/50 transition-colors cursor-pointer ${
+                            !notif.read ? "bg-primary/5 dark:bg-primary/5" : ""
+                          }`}
+                        >
+                          <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${
+                            notif.type === "appointment" ? "bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400" :
+                            notif.type === "message" ? "bg-teal-100 dark:bg-teal-900/30 text-teal-600 dark:text-teal-400" :
+                            notif.type === "patient" ? "bg-violet-100 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400" :
+                            notif.type === "alert" ? "bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400" :
+                            "bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400"
+                          }`}>
+                            <Icon className="w-4 h-4" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center justify-between gap-2">
+                              <p className="text-xs font-semibold text-foreground truncate">{notif.title}</p>
+                              <span className="text-[9px] text-muted-foreground shrink-0">{notif.time}</span>
+                            </div>
+                            <p className="text-[11px] text-muted-foreground mt-0.5 truncate">{notif.message}</p>
+                          </div>
+                          {!notif.read && (
+                            <div className="w-2 h-2 rounded-full bg-primary shrink-0 mt-2" />
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  {/* Footer */}
+                  <div className="p-3 border-t border-slate-100 dark:border-slate-700 text-center">
+                    <Link to="/notifications" onClick={() => setNotificationsOpen(false)} className="text-xs text-primary hover:underline font-medium">
+                      عرض جميع الإشعارات
+                    </Link>
+                  </div>
+                </div>
+              )}
+            </div>
 
             {/* Theme Toggle */}
             <button
