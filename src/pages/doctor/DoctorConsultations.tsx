@@ -1,5 +1,5 @@
 import DashboardLayout from "@/components/DashboardLayout";
-import { LayoutDashboard, Users, Stethoscope, Clock, MessageSquare, DollarSign, User, Search, Filter, Video, MessageCircle, MapPin, Calendar, CheckCircle2, XCircle, Clock3, Eye } from "lucide-react";
+import { LayoutDashboard, Users, Stethoscope, Clock, MessageSquare, DollarSign, User, Search, Filter, MessageCircle, MapPin, Calendar, CheckCircle2, XCircle, Clock3, Eye } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
@@ -9,7 +9,7 @@ const sidebarItems = [
   { icon: <Users className="w-4 h-4" />, label: "المرضى", path: "/doctor/patients" },
   { icon: <Stethoscope className="w-4 h-4" />, label: "الاستشارات", path: "/doctor/consultations" },
   { icon: <Clock className="w-4 h-4" />, label: "أوقات العمل", path: "/doctor/schedule" },
-  { icon: <MessageSquare className="w-4 h-4" />, label: "الرسائل", path: "/doctor/messages" },
+  // { icon: <MessageSquare className="w-4 h-4" />, label: "الرسائل", path: "/doctor/messages" },
   { icon: <DollarSign className="w-4 h-4" />, label: "الأرباح", path: "/doctor/earnings" },
   { icon: <User className="w-4 h-4" />, label: "الملف الشخصي", path: "/doctor/profile" },
 ];
@@ -18,7 +18,7 @@ interface Consultation {
   id: number;
   patient: string;
   age: number;
-  type: "فيديو" | "دردشة" | "زيارة";
+  type: "زيارة";
   date: string;
   time: string;
   duration: string;
@@ -34,7 +34,7 @@ const consultationsData: Consultation[] = [
     id: 1,
     patient: "محمد سعيد",
     age: 45,
-    type: "فيديو",
+    type: "زيارة",
     date: "2025-05-17",
     time: "10:00 ص",
     duration: "25 دقيقة",
@@ -48,7 +48,7 @@ const consultationsData: Consultation[] = [
     id: 2,
     patient: "أمل الرشيد",
     age: 32,
-    type: "فيديو",
+    type: "زيارة",
     date: "2025-05-17",
     time: "11:30 ص",
     duration: "20 دقيقة",
@@ -62,7 +62,7 @@ const consultationsData: Consultation[] = [
     id: 3,
     patient: "يوسف أحمد",
     age: 28,
-    type: "دردشة",
+    type: "زيارة",
     date: "2025-05-17",
     time: "2:00 م",
     duration: "15 دقيقة",
@@ -90,7 +90,7 @@ const consultationsData: Consultation[] = [
     id: 5,
     patient: "خالد الفهد",
     age: 38,
-    type: "فيديو",
+    type: "زيارة",
     date: "2025-05-16",
     time: "9:00 ص",
     duration: "20 دقيقة",
@@ -104,7 +104,7 @@ const consultationsData: Consultation[] = [
     id: 6,
     patient: "نورة العلي",
     age: 42,
-    type: "دردشة",
+    type: "زيارة",
     date: "2025-05-16",
     time: "11:00 ص",
     duration: "10 دقائق",
@@ -132,7 +132,7 @@ const consultationsData: Consultation[] = [
     id: 8,
     patient: "ليلى حسن",
     age: 25,
-    type: "فيديو",
+    type: "زيارة",
     date: "2025-05-15",
     time: "2:00 م",
     duration: "15 دقيقة",
@@ -145,14 +145,10 @@ const consultationsData: Consultation[] = [
 ];
 
 const typeIcons: Record<string, React.ReactNode> = {
-  "فيديو": <Video className="w-3.5 h-3.5" />,
-  "دردشة": <MessageCircle className="w-3.5 h-3.5" />,
   "زيارة": <MapPin className="w-3.5 h-3.5" />,
 };
 
 const typeColors: Record<string, string> = {
-  "فيديو": "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400",
-  "دردشة": "bg-teal-100 dark:bg-teal-900/30 text-teal-700 dark:text-teal-400",
   "زيارة": "bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400",
 };
 
@@ -248,7 +244,7 @@ const DoctorConsultations = () => {
           </div>
           {/* Type Filter */}
           <div className="flex gap-1.5 overflow-x-auto pb-1">
-            {["الكل", "فيديو", "دردشة", "زيارة"].map((type) => (
+            {["الكل", "زيارة", "زيارة"].map((type) => (
               <Button
                 key={type}
                 variant={filterType === type ? "default" : "outline"}

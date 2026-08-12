@@ -1,4 +1,4 @@
-import { Bot, UserCheck, Video, FileText } from "lucide-react";
+import { Bot, UserCheck, MessageSquare, FileText } from "lucide-react";
 
 const steps = [
   {
@@ -14,10 +14,10 @@ const steps = [
     description: "يقترح عليك النظام أفضل الأطباء المتخصصين",
   },
   {
-    icon: Video,
+    icon: MessageSquare,
     step: "03",
     title: "استشارة مباشرة",
-    description: "تواصل مع طبيبك عبر مكالمة فيديو فورية",
+    description: "تواصل مع طبيبك عبر محادثة فورية",
   },
   {
     icon: FileText,

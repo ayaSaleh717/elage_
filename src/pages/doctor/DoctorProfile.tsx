@@ -9,7 +9,7 @@ const sidebarItems = [
   { icon: <Users className="w-4 h-4" />, label: "المرضى", path: "/doctor/patients" },
   { icon: <Stethoscope className="w-4 h-4" />, label: "الاستشارات", path: "/doctor/consultations" },
   { icon: <Clock className="w-4 h-4" />, label: "أوقات العمل", path: "/doctor/schedule" },
-  { icon: <MessageSquare className="w-4 h-4" />, label: "الرسائل", path: "/doctor/messages" },
+  // { icon: <MessageSquare className="w-4 h-4" />, label: "الرسائل", path: "/doctor/messages" },
   { icon: <DollarSign className="w-4 h-4" />, label: "الأرباح", path: "/doctor/earnings" },
   { icon: <User className="w-4 h-4" />, label: "الملف الشخصي", path: "/doctor/profile" },
 ];

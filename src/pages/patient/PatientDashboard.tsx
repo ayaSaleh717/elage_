@@ -200,7 +200,7 @@ const PatientDashboard = () => {
                 <p className="text-[11px] text-muted-foreground mt-1">اختر طبيبك المفضل</p>
               </div>
             </Link>
-            <div className="group cursor-pointer">
+            {/* <div className="group cursor-pointer">
               <div className="bg-card dark:bg-slate-800/50 rounded-2xl p-5 border border-border/50 hover:border-emerald-300 dark:hover:border-emerald-500/40 hover:shadow-lg hover:shadow-emerald-500/10 transition-all text-center">
                 <div className="w-12 h-12 rounded-xl bg-emerald-100 dark:bg-emerald-500/20 flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform">
                   <CreditCard className="w-6 h-6 text-emerald-600 dark:text-emerald-400" />
@@ -208,7 +208,7 @@ const PatientDashboard = () => {
                 <p className="text-sm font-bold text-foreground">شحن الرصيد</p>
                 <p className="text-[11px] text-muted-foreground mt-1">أضف رصيداً لحسابك</p>
               </div>
-            </div>
+            </div> */}
           </div>
 
         </div>

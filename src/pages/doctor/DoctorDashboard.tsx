@@ -15,9 +15,8 @@ const sidebarItems = [
 
 // Donut chart data - consultation types
 const consultationTypeData = [
-  { name: "فيديو", value: 45, color: "#0ea5e9" },
-  { name: "دردشة", value: 30, color: "#14b8a6" },
-  { name: "زيارة", value: 15, color: "#f59e0b" },
+  { name: "دردشة", value: 60, color: "#14b8a6" },
+  { name: "زيارة", value: 30, color: "#f59e0b" },
   { name: "طوارئ", value: 10, color: "#ef4444" },
 ];
 
@@ -85,9 +84,9 @@ const DoctorDashboard = () => {
       </div>
 
       {/* Charts Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 mb-6 sm:mb-8">
+      <div className="grid grid-cols-1 lg:grid-cols-1 gap-4 sm:gap-6 mb-6 sm:mb-8">
         {/* Donut Chart - Consultation Types */}
-        <div className={`bg-white dark:bg-slate-800 rounded-2xl p-4 sm:p-6 border border-slate-100 dark:border-slate-700 shadow-sm transition-all duration-700 ${
+        {/* <div className={`bg-white dark:bg-slate-800 rounded-2xl p-4 sm:p-6 border border-slate-100 dark:border-slate-700 shadow-sm transition-all duration-700 ${
           chartVisible ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-8"
         }`}>
           <div className="flex items-center justify-between mb-4">
@@ -144,7 +143,7 @@ const DoctorDashboard = () => {
               ))}
             </div>
           </div>
-        </div>
+        </div> */}
 
         {/* Bar Chart - Weekly Consultations */}
         <div className={`bg-white dark:bg-slate-800 rounded-2xl p-4 sm:p-6 border border-slate-100 dark:border-slate-700 shadow-sm transition-all duration-700 ${
@@ -204,74 +203,10 @@ const DoctorDashboard = () => {
         </div>
       </div>
 
-      {/* Timeline Section */}
-      <div className={`bg-white dark:bg-slate-800 rounded-2xl p-4 sm:p-6 border border-slate-100 dark:border-slate-700 shadow-sm mb-6 sm:mb-8 transition-all duration-700 delay-100 ${
-        chartVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
-      }`}>
-        <div className="flex items-center justify-between mb-5">
-          <h3 className="font-display font-bold text-foreground text-sm sm:text-base flex items-center gap-2">
-            <Clock className="w-4 h-4 text-primary" />
-            الجدول الزمني لليوم
-          </h3>
-          <span className="text-[10px] sm:text-xs text-muted-foreground bg-primary/10 dark:bg-primary/20 text-primary px-2 sm:px-3 py-1 rounded-full font-medium">
-            8 مواعيد
-          </span>
-        </div>
-
-        <div className="relative">
-          {/* Timeline line */}
-          <div className="absolute right-[18px] sm:right-[22px] top-2 bottom-2 w-0.5 bg-gradient-to-b from-primary/40 via-teal-400/30 to-slate-200 dark:to-slate-700 rounded-full" />
-
-          <div className="space-y-4 sm:space-y-5">
-            {[
-              { time: "8:00 ص", patient: "فحص روتيني", name: "أحمد محمد", status: "مكتمل", statusColor: "bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400", dotColor: "bg-emerald-500" },
-              { time: "9:30 ص", patient: "متابعة علاج", name: "سارة خالد", status: "مكتمل", statusColor: "bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400", dotColor: "bg-emerald-500" },
-              { time: "10:00 ص", patient: "استشارة فيديو", name: "محمد سعيد", status: "جاري الآن", statusColor: "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400", dotColor: "bg-blue-500 animate-pulse" },
-              { time: "11:30 ص", patient: "استشارة فيديو", name: "أمل الرشيد", status: "قادم", statusColor: "bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-400", dotColor: "bg-slate-400 dark:bg-slate-500" },
-              { time: "1:00 م", patient: "استراحة غداء", name: "", status: "استراحة", statusColor: "bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400", dotColor: "bg-amber-400" },
-              { time: "2:00 م", patient: "دردشة طبية", name: "يوسف أحمد", status: "قادم", statusColor: "bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-400", dotColor: "bg-slate-400 dark:bg-slate-500" },
-              { time: "3:30 م", patient: "زيارة عيادة", name: "سارة خالد", status: "قادم", statusColor: "bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-400", dotColor: "bg-slate-400 dark:bg-slate-500" },
-              { time: "5:00 م", patient: "نهاية الدوام", name: "", status: "", statusColor: "", dotColor: "bg-red-400" },
-            ].map((item, i) => (
-              <div key={i} className="flex items-start gap-3 sm:gap-4 relative group">
-                {/* Dot */}
-                <div className="relative z-10 shrink-0">
-                  <div className={`w-3 h-3 sm:w-3.5 sm:h-3.5 rounded-full ${item.dotColor} ring-4 ring-white dark:ring-slate-800 group-hover:scale-125 transition-transform`} />
-                </div>
-
-                {/* Content */}
-                <div className={`flex-1 p-3 sm:p-4 rounded-xl -mt-1 transition-all duration-300 ${
-                  item.status === "جاري الآن" 
-                    ? "bg-blue-50 dark:bg-blue-900/10 border border-blue-200 dark:border-blue-800 shadow-sm" 
-                    : "bg-slate-50 dark:bg-slate-900/50 hover:bg-slate-100 dark:hover:bg-slate-900/80"
-                }`}>
-                  <div className="flex items-center justify-between flex-wrap gap-2">
-                    <div className="flex items-center gap-2 sm:gap-3">
-                      <span className="text-[10px] sm:text-xs font-bold text-primary bg-primary/10 dark:bg-primary/20 px-2 py-0.5 rounded-md">
-                        {item.time}
-                      </span>
-                      <div>
-                        <p className="text-xs sm:text-sm font-medium text-foreground">{item.patient}</p>
-                        {item.name && (
-                          <p className="text-[10px] sm:text-xs text-muted-foreground mt-0.5">{item.name}</p>
-                        )}
-                      </div>
-                    </div>
-                    {item.status && (
-                      <span className={`text-[9px] sm:text-[10px] px-2 py-0.5 rounded-full font-medium ${item.statusColor}`}>
-                        {item.status}
-                      </span>
-                    )}
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
+     
 
       {/* Bottom Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+      <div className=" lg:grid-cols-1 gap-4 sm:gap-6">
         {/* Upcoming Consultations */}
         <div className={`bg-white dark:bg-slate-800 rounded-2xl p-4 sm:p-6 border border-slate-100 dark:border-slate-700 shadow-sm transition-all duration-700 delay-200 ${
           chartVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
@@ -285,10 +220,10 @@ const DoctorDashboard = () => {
           </div>
           <div className="space-y-2 sm:space-y-3">
             {[
-              { patient: "محمد سعيد", time: "10:00 ص", type: "فيديو", typeColor: "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400" },
-              { patient: "أمل الرشيد", time: "11:30 ص", type: "فيديو", typeColor: "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400" },
-              { patient: "يوسف أحمد", time: "2:00 م", type: "دردشة", typeColor: "bg-teal-100 dark:bg-teal-900/30 text-teal-700 dark:text-teal-400" },
-              { patient: "سارة خالد", time: "3:30 م", type: "زيارة", typeColor: "bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400" },
+              { patient: "محمد سعيد", time: "10:00 ص", typeColor: "bg-teal-100 dark:bg-teal-900/30 text-teal-700 dark:text-teal-400" },
+              { patient: "أمل الرشيد", time: "11:30 ص", typeColor: "bg-teal-100 dark:bg-teal-900/30 text-teal-700 dark:text-teal-400" },
+              { patient: "يوسف أحمد", time: "2:00 م",  typeColor: "bg-teal-100 dark:bg-teal-900/30 text-teal-700 dark:text-teal-400" },
+              { patient: "سارة خالد", time: "3:30 م",  typeColor: "bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400" },
             ].map((apt, i) => (
               <div 
                 key={i} 
@@ -304,16 +239,16 @@ const DoctorDashboard = () => {
                     <p className="text-[10px] sm:text-xs text-muted-foreground">{apt.time}</p>
                   </div>
                 </div>
-                <span className={`text-[10px] sm:text-xs px-2 sm:px-3 py-1 rounded-full font-medium ${apt.typeColor}`}>
+                {/* <span className={`text-[10px] sm:text-xs px-2 sm:px-3 py-1 rounded-full font-medium ${apt.typeColor}`}>
                   {apt.type}
-                </span>
+                </span> */}
               </div>
             ))}
           </div>
         </div>
 
         {/* Latest Reviews */}
-        <div className={`bg-white dark:bg-slate-800 rounded-2xl p-4 sm:p-6 border border-slate-100 dark:border-slate-700 shadow-sm transition-all duration-700 delay-300 ${
+        {/* <div className={`bg-white dark:bg-slate-800 rounded-2xl p-4 sm:p-6 border border-slate-100 dark:border-slate-700 shadow-sm transition-all duration-700 delay-300 ${
           chartVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
         }`}>
           <div className="flex items-center justify-between mb-4">
@@ -351,7 +286,7 @@ const DoctorDashboard = () => {
               </div>
             ))}
           </div>
-        </div>
+        </div> */}
       </div>
     </DashboardLayout>
   );

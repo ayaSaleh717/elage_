@@ -1,4 +1,4 @@
-import { Video, Bot, Shield, MapPin, Star, Clock } from "lucide-react";
+import { Bot, Shield, MapPin, Star, Clock, FileText } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
 const features = [
@@ -9,9 +9,9 @@ const features = [
     color: "bg-medical-teal-light text-medical-teal",
   },
   {
-    icon: Video,
-    title: "استشارات فيديو مباشرة",
-    description: "تحدث مع طبيبك وجهاً لوجه عبر مكالمات فيديو عالية الجودة",
+    icon: FileText,
+    title: "سجلات طبية إلكترونية",
+    description: "احتفظ بسجلاتك الطبية وتقاريرك في مكان واحد آمن ومتاح دائماً",
     color: "bg-medical-blue-light text-medical-blue",
   },
   {

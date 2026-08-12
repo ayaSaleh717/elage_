@@ -14,13 +14,13 @@ interface Notification {
 }
 
 const allNotifications: Notification[] = [
-  { id: 1, type: "appointment", title: "موعد جديد", message: "محمد سعيد حجز موعد استشارة فيديو يوم الأحد الساعة 10:00 ص", time: "منذ 5 دقائق", date: "اليوم", read: false },
+  { id: 1, type: "appointment", title: "موعد جديد", message: "محمد سعيد حجز موعد استشارة يوم الأحد الساعة 10:00 ص", time: "منذ 5 دقائق", date: "اليوم", read: false },
   { id: 2, type: "message", title: "رسالة جديدة", message: "أمل الرشيد أرسلت لك رسالة: 'موعدي القادم يوم الأحد صح؟'", time: "منذ 15 دقيقة", date: "اليوم", read: false },
   { id: 3, type: "patient", title: "مريض جديد", message: "تم تسجيل مريض جديد: يوسف أحمد حسن - حساسية موسمية", time: "منذ ساعة", date: "اليوم", read: false },
   { id: 4, type: "alert", title: "تنبيه طبي عاجل", message: "سارة خالد الشامي - نتائج تحاليل القلب تحتاج مراجعة فورية", time: "منذ ساعتين", date: "اليوم", read: false },
   { id: 5, type: "system", title: "تم تأكيد الموعد", message: "خالد الدمشقي أكد موعده ليوم الخميس الساعة 2:00 م", time: "منذ 3 ساعات", date: "اليوم", read: true },
   { id: 6, type: "message", title: "رسالة جديدة", message: "نورة العلي أرسلت نتائج فحص الغدة الدرقية TSH: 4.8", time: "منذ 4 ساعات", date: "اليوم", read: true },
-  { id: 7, type: "payment", title: "دفعة جديدة", message: "تم استلام 50,000 ل.س من محمد سعيد - استشارة فيديو", time: "منذ 5 ساعات", date: "اليوم", read: true },
+  { id: 7, type: "payment", title: "دفعة جديدة", message: "تم استلام 50,000 ل.س من محمد سعيد - استشارة", time: "منذ 5 ساعات", date: "اليوم", read: true },
   { id: 8, type: "appointment", title: "إلغاء موعد", message: "ليلى حسن ألغت موعدها ليوم الثلاثاء الساعة 2:00 م", time: "أمس 4:30 م", date: "أمس", read: true },
   { id: 9, type: "system", title: "تحديث النظام", message: "تم تحديث نظام الاستشارات - ميزات جديدة متاحة", time: "أمس 2:00 م", date: "أمس", read: true },
   { id: 10, type: "alert", title: "تذكير بموعد", message: "لديك 3 مواعيد غداً - تأكد من جاهزيتك", time: "أمس 8:00 م", date: "أمس", read: true },

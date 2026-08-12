@@ -141,7 +141,7 @@ const Profile = () => {
       </Card>
 
       {/* Balance Card */}
-      <Card>
+      {/* <Card>
         <CardHeader>
           <CardTitle className="text-lg font-display flex items-center gap-2">
             <Wallet className="w-5 h-5 text-medical-green" />
@@ -157,7 +157,7 @@ const Profile = () => {
             </Button>
           </div>
         </CardContent>
-      </Card>
+      </Card> */}
     </div>
   )
 }

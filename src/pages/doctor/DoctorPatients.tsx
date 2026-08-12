@@ -1,5 +1,5 @@
 import DashboardLayout from "@/components/DashboardLayout";
-import { LayoutDashboard, Users, Stethoscope, Clock, MessageSquare, DollarSign, User, Search, Filter, Phone, Mail, Calendar, Activity, ChevronLeft, Heart } from "lucide-react";
+import { LayoutDashboard, Users, Stethoscope, Clock, MessageSquare, DollarSign, User, Search, Phone, Mail, Calendar, ChevronLeft } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
@@ -9,7 +9,7 @@ const sidebarItems = [
   { icon: <Users className="w-4 h-4" />, label: "المرضى", path: "/doctor/patients" },
   { icon: <Stethoscope className="w-4 h-4" />, label: "الاستشارات", path: "/doctor/consultations" },
   { icon: <Clock className="w-4 h-4" />, label: "أوقات العمل", path: "/doctor/schedule" },
-  { icon: <MessageSquare className="w-4 h-4" />, label: "الرسائل", path: "/doctor/messages" },
+  // { icon: <MessageSquare className="w-4 h-4" />, label: "الرسائل", path: "/doctor/messages" },
   { icon: <DollarSign className="w-4 h-4" />, label: "الأرباح", path: "/doctor/earnings" },
   { icon: <User className="w-4 h-4" />, label: "الملف الشخصي", path: "/doctor/profile" },
 ];
@@ -25,7 +25,6 @@ interface Patient {
   diagnosis: string;
   lastVisit: string;
   nextAppointment: string;
-  status: "مستقر" | "تحت المراقبة" | "حرج" | "متعافي";
   bloodType: string;
   visits: number;
 }
@@ -42,7 +41,6 @@ const patientsData: Patient[] = [
     diagnosis: "ضغط دم مرتفع - المرحلة الثانية",
     lastVisit: "2025-05-10",
     nextAppointment: "2025-05-24",
-    status: "تحت المراقبة",
     bloodType: "A+",
     visits: 12,
   },
@@ -57,7 +55,6 @@ const patientsData: Patient[] = [
     diagnosis: "سكري نوع 2 - منتظم بالأدوية",
     lastVisit: "2025-05-12",
     nextAppointment: "2025-05-26",
-    status: "مستقر",
     bloodType: "O+",
     visits: 8,
   },
@@ -72,7 +69,6 @@ const patientsData: Patient[] = [
     diagnosis: "حساسية أنفية مزمنة",
     lastVisit: "2025-05-14",
     nextAppointment: "2025-06-01",
-    status: "متعافي",
     bloodType: "B+",
     visits: 3,
   },
@@ -87,7 +83,6 @@ const patientsData: Patient[] = [
     diagnosis: "قصور في الشريان التاجي",
     lastVisit: "2025-05-15",
     nextAppointment: "2025-05-20",
-    status: "حرج",
     bloodType: "AB+",
     visits: 20,
   },
@@ -102,7 +97,6 @@ const patientsData: Patient[] = [
     diagnosis: "انزلاق غضروفي - L4/L5",
     lastVisit: "2025-05-08",
     nextAppointment: "2025-05-22",
-    status: "تحت المراقبة",
     bloodType: "O-",
     visits: 6,
   },
@@ -117,7 +111,6 @@ const patientsData: Patient[] = [
     diagnosis: "قصور الغدة الدرقية",
     lastVisit: "2025-05-11",
     nextAppointment: "2025-06-05",
-    status: "مستقر",
     bloodType: "A-",
     visits: 10,
   },
@@ -132,7 +125,6 @@ const patientsData: Patient[] = [
     diagnosis: "التهاب مفاصل روماتويدي",
     lastVisit: "2025-05-13",
     nextAppointment: "2025-05-27",
-    status: "تحت المراقبة",
     bloodType: "B-",
     visits: 15,
   },
@@ -147,28 +139,19 @@ const patientsData: Patient[] = [
     diagnosis: "فقر دم بسبب نقص الحديد",
     lastVisit: "2025-05-16",
     nextAppointment: "2025-05-30",
-    status: "متعافي",
     bloodType: "O+",
     visits: 4,
   },
 ];
 
-const statusColors: Record<string, string> = {
-  "مستقر": "bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400",
-  "تحت المراقبة": "bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400",
-  "حرج": "bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400",
-  "متعافي": "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400",
-};
 
 const DoctorPatients = () => {
   const [searchQuery, setSearchQuery] = useState("");
-  const [filterStatus, setFilterStatus] = useState<string>("الكل");
   const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
 
   const filteredPatients = patientsData.filter((patient) => {
     const matchesSearch = patient.name.includes(searchQuery) || patient.illness.includes(searchQuery) || patient.phone.includes(searchQuery);
-    const matchesFilter = filterStatus === "الكل" || patient.status === filterStatus;
-    return matchesSearch && matchesFilter;
+    return matchesSearch;
   });
 
   return (
@@ -182,30 +165,9 @@ const DoctorPatients = () => {
           </div>
           <p className="text-lg sm:text-2xl font-bold text-foreground">{patientsData.length}</p>
         </div>
-        <div className="bg-white dark:bg-slate-800 rounded-xl p-3 sm:p-4 border border-slate-100 dark:border-slate-700 shadow-sm">
-          <div className="flex items-center gap-2 mb-1">
-            <Activity className="w-4 h-4 text-amber-500" />
-            <span className="text-[10px] sm:text-xs text-muted-foreground">تحت المراقبة</span>
-          </div>
-          <p className="text-lg sm:text-2xl font-bold text-foreground">{patientsData.filter(p => p.status === "تحت المراقبة").length}</p>
-        </div>
-        <div className="bg-white dark:bg-slate-800 rounded-xl p-3 sm:p-4 border border-slate-100 dark:border-slate-700 shadow-sm">
-          <div className="flex items-center gap-2 mb-1">
-            <Heart className="w-4 h-4 text-red-500" />
-            <span className="text-[10px] sm:text-xs text-muted-foreground">حالات حرجة</span>
-          </div>
-          <p className="text-lg sm:text-2xl font-bold text-foreground">{patientsData.filter(p => p.status === "حرج").length}</p>
-        </div>
-        <div className="bg-white dark:bg-slate-800 rounded-xl p-3 sm:p-4 border border-slate-100 dark:border-slate-700 shadow-sm">
-          <div className="flex items-center gap-2 mb-1">
-            <Stethoscope className="w-4 h-4 text-emerald-500" />
-            <span className="text-[10px] sm:text-xs text-muted-foreground">متعافين</span>
-          </div>
-          <p className="text-lg sm:text-2xl font-bold text-foreground">{patientsData.filter(p => p.status === "متعافي").length}</p>
-        </div>
       </div>
 
-      {/* Search & Filter */}
+      {/* Search */}
       <div className="flex flex-col sm:flex-row gap-3 mb-6">
         <div className="relative flex-1">
           <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
@@ -215,24 +177,6 @@ const DoctorPatients = () => {
             onChange={(e) => setSearchQuery(e.target.value)}
             className="pr-10 h-10 sm:h-11 rounded-xl border-slate-200 dark:border-slate-700 text-xs sm:text-sm"
           />
-        </div>
-        <div className="flex gap-2 overflow-x-auto pb-1">
-          {["الكل", "مستقر", "تحت المراقبة", "حرج", "متعافي"].map((status) => (
-            <Button
-              key={status}
-              variant={filterStatus === status ? "default" : "outline"}
-              size="sm"
-              onClick={() => setFilterStatus(status)}
-              className={`rounded-lg text-[10px] sm:text-xs whitespace-nowrap px-3 ${
-                filterStatus === status
-                  ? "bg-primary text-white"
-                  : "border-slate-200 dark:border-slate-700"
-              }`}
-            >
-              {status === "الكل" && <Filter className="w-3 h-3 ml-1" />}
-              {status}
-            </Button>
-          ))}
         </div>
       </div>
 
@@ -250,9 +194,6 @@ const DoctorPatients = () => {
                   <h3 className="font-bold text-foreground text-sm sm:text-base">{selectedPatient.name}</h3>
                   <div className="flex items-center gap-2 mt-0.5">
                     <span className="text-xs text-muted-foreground">{selectedPatient.age} سنة • {selectedPatient.gender}</span>
-                    <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${statusColors[selectedPatient.status]}`}>
-                      {selectedPatient.status}
-                    </span>
                   </div>
                 </div>
               </div>
@@ -333,9 +274,6 @@ const DoctorPatients = () => {
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2 flex-wrap">
                       <p className="text-xs sm:text-sm font-semibold text-foreground truncate">{patient.name}</p>
-                      <span className={`text-[9px] sm:text-[10px] px-1.5 sm:px-2 py-0.5 rounded-full font-medium shrink-0 ${statusColors[patient.status]}`}>
-                        {patient.status}
-                      </span>
                     </div>
                     <div className="flex items-center gap-2 sm:gap-3 mt-1 text-[10px] sm:text-xs text-muted-foreground">
                       <span>{patient.age} سنة</span>

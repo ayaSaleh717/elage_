@@ -8,7 +8,7 @@ const sidebarItems = [
   { icon: <Users className="w-4 h-4" />, label: "المرضى", path: "/doctor/patients" },
   { icon: <Stethoscope className="w-4 h-4" />, label: "الاستشارات", path: "/doctor/consultations" },
   { icon: <Clock className="w-4 h-4" />, label: "أوقات العمل", path: "/doctor/schedule" },
-  { icon: <MessageSquare className="w-4 h-4" />, label: "الرسائل", path: "/doctor/messages" },
+  // { icon: <MessageSquare className="w-4 h-4" />, label: "الرسائل", path: "/doctor/messages" },
   { icon: <DollarSign className="w-4 h-4" />, label: "الأرباح", path: "/doctor/earnings" },
   { icon: <User className="w-4 h-4" />, label: "الملف الشخصي", path: "/doctor/profile" },
 ];
@@ -32,14 +32,14 @@ const weeklyEarnings = [
 ];
 
 const transactions = [
-  { id: 1, patient: "محمد سعيد", type: "استشارة فيديو", amount: 50000, date: "2025-05-17", status: "مكتمل" },
+  // { id: 1, patient: "محمد سعيد", type: "استشارة فيديو", amount: 50000, date: "2025-05-17", status: "مكتمل" },
   { id: 2, patient: "أمل الرشيد", type: "متابعة", amount: 30000, date: "2025-05-16", status: "مكتمل" },
   { id: 3, patient: "يوسف أحمد", type: "دردشة طبية", amount: 25000, date: "2025-05-16", status: "مكتمل" },
   { id: 4, patient: "سارة خالد", type: "زيارة عيادة", amount: 75000, date: "2025-05-15", status: "مكتمل" },
-  { id: 5, patient: "خالد الدمشقي", type: "استشارة فيديو", amount: 50000, date: "2025-05-15", status: "مكتمل" },
+  // { id: 5, patient: "خالد الدمشقي", type: "استشارة فيديو", amount: 50000, date: "2025-05-15", status: "مكتمل" },
   { id: 6, patient: "نورة العلي", type: "دردشة طبية", amount: 25000, date: "2025-05-14", status: "معلق" },
   { id: 7, patient: "فادي الحموي", type: "زيارة عيادة", amount: 75000, date: "2025-05-14", status: "مكتمل" },
-  { id: 8, patient: "ليلى حسن", type: "استشارة فيديو", amount: 50000, date: "2025-05-13", status: "ملغاة" },
+  // { id: 8, patient: "ليلى حسن", type: "استشارة فيديو", amount: 50000, date: "2025-05-13", status: "ملغاة" },
 ];
 
 const DoctorEarnings = () => {

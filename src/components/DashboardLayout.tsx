@@ -44,7 +44,7 @@ const DashboardLayout = ({ children, title, items, role }: DashboardLayoutProps)
   }, []);
 
   const notifications = [
-    { id: 1, type: "appointment", title: "موعد جديد", message: "محمد سعيد حجز موعد استشارة فيديو", time: "منذ 5 دقائق", read: false, icon: Calendar },
+    { id: 1, type: "appointment", title: "موعد جديد", message: "محمد سعيد حجز موعد استشارة", time: "منذ 5 دقائق", read: false, icon: Calendar },
     { id: 2, type: "message", title: "رسالة جديدة", message: "أمل الرشيد أرسلت لك رسالة", time: "منذ 15 دقيقة", read: false, icon: MessageSquare },
     { id: 3, type: "patient", title: "مريض جديد", message: "تم تسجيل مريض جديد: يوسف أحمد", time: "منذ ساعة", read: false, icon: UserCheck },
     { id: 4, type: "alert", title: "تنبيه طبي", message: "سارة خالد - نتائج تحاليل تحتاج مراجعة", time: "منذ ساعتين", read: true, icon: AlertCircle },
