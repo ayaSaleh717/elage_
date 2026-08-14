@@ -51,8 +51,14 @@ const Login = () => {
       });
 
       if (response.success) {
-        // Check user role and redirect accordingly
+        // Check if email is verified
         const user = response.user;
+        if (user?.email_verified_at === null) {
+          setError("يرجى تفعيل حسابك عبر الرابط المرسل إلى بريدك الإلكتروني");
+          return;
+        }
+
+        // Check user role and redirect accordingly
         if (user?.role === 'doctor') {
           navigate('/doctor');
         } else {
