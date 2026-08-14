@@ -17,14 +17,13 @@ import {
   UserRound,
   CalendarCheck,
   Filter,
+  AlertCircle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import doctors from "@/components/data/doctor.json";
-
-const allDoctors = doctors.doctors;
+import { apiService, Doctor } from "@/services/api";
 
 const specialtyIcons: Record<string, React.ReactNode> = {
   "طب القلب": <Heart className="w-5 h-5" />,
@@ -37,19 +36,103 @@ const specialtyIcons: Record<string, React.ReactNode> = {
   "أمراض نساء": <UserRound className="w-5 h-5" />,
 };
 
-const specialties = [...new Set(allDoctors.map((d) => d.specialty))];
-
 const DoctorsPage = () => {
+  const [allDoctors, setAllDoctors] = useState<Doctor[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState("");
   const [search, setSearch] = useState("");
   const [view, setView] = useState<"grid" | "map">("grid");
   const [selectedSpecialty, setSelectedSpecialty] = useState<string | null>(null);
+  const [locationNames, setLocationNames] = useState<Record<number, string>>({});
+  const [doctorAvailability, setDoctorAvailability] = useState<Record<number, boolean>>({});
 
-  const filtered = allDoctors.filter((d) => {
+  const fetchLocationName = async (lat: number, lng: number, doctorId: number) => {
+    try {
+      const response = await fetch(
+        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`,
+        {
+          headers: {
+            'Accept-Language': 'ar'
+          }
+        }
+      );
+      const data = await response.json();
+
+      if (data.address) {
+        const addr = data.address;
+        const country = addr.country || "";
+        const city = addr.city || addr.town || addr.village || addr.state || "";
+        const street = addr.road || addr.street || "";
+
+        const locationParts = [country, city, street].filter(Boolean);
+        const formattedLocation = locationParts.join(' - ');
+
+        if (formattedLocation) {
+          setLocationNames(prev => ({ ...prev, [doctorId]: formattedLocation }));
+        }
+      }
+    } catch (err) {
+      console.error("Failed to fetch location name:", err);
+    }
+  };
+
+  const checkDoctorAvailability = async (doctorId: number) => {
+    try {
+      const response = await apiService.getDoctorBookingInfo(doctorId);
+      if (response.success && response.data) {
+        const days = response.data;
+        // Check if any day is open and has available slots
+        const hasAvailableSlots = days.some((day: any) => {
+          if (day.is_open === 1 && day.slots && day.slots.length > 0) {
+            return day.slots.some((slot: any) => slot.is_available === true);
+          }
+          return false;
+        });
+        setDoctorAvailability(prev => ({ ...prev, [doctorId]: hasAvailableSlots }));
+      }
+    } catch (err) {
+      console.error("Failed to check doctor availability:", err);
+    }
+  };
+
+  const specialties = Array.isArray(allDoctors) ? [...new Set(allDoctors.map((d) => d.specialty))] : [];
+
+  const filtered = Array.isArray(allDoctors) ? allDoctors.filter((d) => {
     const matchesSearch =
       d.name.includes(search) || d.specialty.includes(search) || d.location.includes(search);
     const matchesSpecialty = !selectedSpecialty || d.specialty === selectedSpecialty;
     return matchesSearch && matchesSpecialty;
-  });
+  }) : [];
+
+  useEffect(() => {
+    const fetchDoctors = async () => {
+      try {
+        const response = await apiService.getDoctors();
+        if (response.success && Array.isArray(response.data)) {
+          setAllDoctors(response.data);
+
+          // Fetch location names and check availability for doctors with coordinates
+          response.data.forEach((doctor) => {
+            if (doctor.lat && doctor.lng) {
+              fetchLocationName(doctor.lat, doctor.lng, doctor.id);
+            }
+            // Check availability based on schedule
+            checkDoctorAvailability(doctor.id);
+          });
+        } else {
+          setAllDoctors([]);
+        }
+      } catch (err: any) {
+        setError(err.message || "فشل تحميل الأطباء");
+        console.error("Failed to fetch doctors:", err);
+        setAllDoctors([]);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchDoctors();
+  }, []);
 
   return (
     <div className="min-h-screen bg-background">
@@ -139,20 +222,56 @@ const DoctorsPage = () => {
 
           {/* Results count */}
           <div className="mb-6">
-            <p className="text-sm text-muted-foreground">
-              عرض <span className="font-bold text-foreground">{filtered.length}</span> طبيب
-            </p>
+            {isLoading ? (
+              <div className="h-6 bg-muted rounded w-32 animate-pulse" />
+            ) : (
+              <p className="text-sm text-muted-foreground">
+                عرض <span className="font-bold text-foreground">{filtered.length}</span> طبيب
+              </p>
+            )}
           </div>
 
+          {/* Error display */}
+          {error && (
+            <div className="mb-6 bg-destructive/10 border border-destructive/20 text-destructive rounded-2xl p-6 text-center">
+              <AlertCircle className="w-8 h-8 mx-auto mb-2" />
+              <p className="font-medium">{error}</p>
+            </div>
+          )}
+
+          {/* Loading state */}
+          {isLoading && (
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
+                <div key={i} className="bg-card rounded-2xl overflow-hidden border border-border/50 shadow-card p-6 space-y-4 animate-pulse">
+                  <div className="flex items-center gap-4">
+                    <div className="w-14 h-14 rounded-full bg-muted" />
+                    <div className="flex-1 space-y-2">
+                      <div className="h-4 bg-muted rounded w-3/4" />
+                      <div className="h-3 bg-muted rounded w-1/2" />
+                    </div>
+                  </div>
+                  <div className="h-10 bg-muted rounded-xl" />
+                  <div className="h-4 bg-muted rounded w-2/3" />
+                  <div className="flex justify-between">
+                    <div className="h-4 bg-muted rounded w-1/4" />
+                    <div className="h-6 bg-muted rounded w-1/4" />
+                  </div>
+                  <div className="h-10 bg-muted rounded-xl" />
+                </div>
+              ))}
+            </div>
+          )}
+
           {/* Map View */}
-          {view === "map" && (
+          {!isLoading && view === "map" && (
             <div className="mb-10 rounded-2xl overflow-hidden border border-border/60 shadow-card animate-fade-in">
               <DoctorsMap doctors={filtered} />
             </div>
           )}
 
           {/* Doctor Grid */}
-          {view === "grid" && (
+          {!isLoading && view === "grid" && (
             <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 animate-fade-in">
               {filtered.map((doc, i) => (
                 <div
@@ -194,7 +313,9 @@ const DoctorsPage = () => {
                     {/* Location */}
                     <div className="flex items-center gap-2 text-sm text-muted-foreground">
                       <MapPin className="w-4 h-4 text-muted-foreground/70" />
-                      <span>{doc.location}</span>
+                      <span className="line-clamp-1">
+                        {locationNames[doc.id] || doc.location}
+                      </span>
                     </div>
 
                     {/* Price & availability */}
@@ -202,12 +323,12 @@ const DoctorsPage = () => {
                       <span className="text-sm font-bold text-foreground">{doc.price} د.ج</span>
                       <span
                         className={`text-xs px-2.5 py-1 rounded-full font-medium ${
-                          doc.available
+                          doctorAvailability[doc.id] !== false
                             ? "bg-medical-green/10 text-medical-green border border-medical-green/20"
                             : "bg-muted text-muted-foreground border border-border"
                         }`}
                       >
-                        {doc.available ? "متاح" : "غير متاح"}
+                        {doctorAvailability[doc.id] !== false ? "متاح" : "غير متاح"}
                       </span>
                     </div>
 
@@ -215,7 +336,7 @@ const DoctorsPage = () => {
                     <Link to={`/reservation?doctor=${doc.id}`} className="block">
                       <Button
                         className="w-full bg-gradient-primary text-primary-foreground hover:opacity-90 gap-2 transition-all hover:shadow-lg hover:shadow-primary/20"
-                        disabled={!doc.available}
+                        disabled={doctorAvailability[doc.id] === false}
                       >
                         <CalendarCheck className="w-4 h-4" />
                         حجز موعد

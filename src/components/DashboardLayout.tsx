@@ -1,7 +1,8 @@
 import { ReactNode, useState, useRef, useEffect } from "react";
-import { Link, useLocation } from "react-router-dom";
-import { Stethoscope, ChevronLeft, Menu, X, Sun, Moon, Bell, Search, Calendar, MessageSquare, UserCheck, AlertCircle, CheckCircle2 } from "lucide-react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Stethoscope, ChevronLeft, Menu, X, Sun, Moon, Bell, Search, Calendar, MessageSquare, UserCheck, AlertCircle, CheckCircle2, LogOut } from "lucide-react";
 import { useTheme } from "@/components/ThemeProvider";
+import { apiService } from "@/services/api";
 
 interface SidebarItem {
   icon: ReactNode;
@@ -24,8 +25,11 @@ const roleLabels = {
 
 const DashboardLayout = ({ children, title, items, role }: DashboardLayoutProps) => {
   const location = useLocation();
+  const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
+  const [logoutModalOpen, setLogoutModalOpen] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
   const { theme, toggleTheme } = useTheme();
   const notifRef = useRef<HTMLDivElement>(null);
 
@@ -53,6 +57,21 @@ const DashboardLayout = ({ children, title, items, role }: DashboardLayoutProps)
   ];
 
   const unreadCount = notifications.filter(n => !n.read).length;
+
+  const handleLogout = async () => {
+    setIsLoggingOut(true);
+    try {
+      await apiService.logout();
+      navigate("/login");
+    } catch (error) {
+      console.error("Logout error:", error);
+      // Still navigate to login even on error
+      navigate("/login");
+    } finally {
+      setIsLoggingOut(false);
+      setLogoutModalOpen(false);
+    }
+  };
 
   return (
     <div className="flex min-h-screen bg-slate-50 dark:bg-slate-950">
@@ -128,16 +147,27 @@ const DashboardLayout = ({ children, title, items, role }: DashboardLayoutProps)
         </nav>
 
         {/* Sidebar Footer */}
-        <div className="p-4 mx-4 mb-4 rounded-2xl bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-800 dark:to-slate-800/50 border border-slate-200/50 dark:border-slate-700/50">
-          <Link
-            to="/"
-            className="flex items-center gap-3 text-sm text-slate-500 dark:text-slate-400 hover:text-primary transition-colors"
+        <div className="p-4 space-y-2">
+          <button
+            onClick={() => setLogoutModalOpen(true)}
+            className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/20 transition-colors"
           >
-            <div className="w-8 h-8 rounded-lg bg-white dark:bg-slate-700 shadow-sm flex items-center justify-center">
-              <ChevronLeft className="w-4 h-4" />
+            <div className="w-9 h-9 rounded-xl flex items-center justify-center bg-red-100 dark:bg-red-900/30">
+              <LogOut className="w-4 h-4" />
             </div>
-            <span className="text-xs font-medium">العودة للرئيسية</span>
-          </Link>
+            <span className="font-medium">تسجيل الخروج</span>
+          </button>
+          <div className="p-4 mx-0 rounded-2xl bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-800 dark:to-slate-800/50 border border-slate-200/50 dark:border-slate-700/50">
+            <Link
+              to="/"
+              className="flex items-center gap-3 text-sm text-slate-500 dark:text-slate-400 hover:text-primary transition-colors"
+            >
+              <div className="w-8 h-8 rounded-lg bg-white dark:bg-slate-700 shadow-sm flex items-center justify-center">
+                <ChevronLeft className="w-4 h-4" />
+              </div>
+              <span className="text-xs font-medium">العودة للرئيسية</span>
+            </Link>
+          </div>
         </div>
       </aside>
 
@@ -274,6 +304,46 @@ const DashboardLayout = ({ children, title, items, role }: DashboardLayoutProps)
         {/* Page Content */}
         <div className="flex-1 p-4 lg:p-8">{children}</div>
       </main>
+
+      {/* Logout Confirmation Modal */}
+      {logoutModalOpen && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl max-w-md w-full p-6 animate-fade-in">
+            <div className="text-center space-y-4">
+              <div className="w-16 h-16 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center mx-auto">
+                <LogOut className="w-8 h-8 text-red-600 dark:text-red-400" />
+              </div>
+              <div>
+                <h3 className="text-xl font-bold text-foreground mb-2">تسجيل الخروج</h3>
+                <p className="text-muted-foreground text-sm">هل أنت متأكد من أنك تريد تسجيل الخروج؟</p>
+              </div>
+              <div className="flex gap-3 pt-2">
+                <button
+                  onClick={() => setLogoutModalOpen(false)}
+                  disabled={isLoggingOut}
+                  className="flex-1 px-4 py-3 rounded-xl border border-border hover:bg-muted transition-colors text-sm font-medium disabled:opacity-50"
+                >
+                  إلغاء
+                </button>
+                <button
+                  onClick={handleLogout}
+                  disabled={isLoggingOut}
+                  className="flex-1 px-4 py-3 rounded-xl bg-red-600 hover:bg-red-700 text-white transition-colors text-sm font-medium disabled:opacity-50 flex items-center justify-center gap-2"
+                >
+                  {isLoggingOut ? (
+                    <>
+                      <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      جاري تسجيل الخروج...
+                    </>
+                  ) : (
+                    "نعم، تسجيل الخروج"
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

@@ -1,8 +1,8 @@
-import { Star, MapPin, Heart, Baby, Users, Stethoscope, Eye, Brain, Scissors, UserRound, CalendarCheck } from "lucide-react";
+import { Star, MapPin, Heart, Baby, Users, Stethoscope, Eye, Brain, Scissors, UserRound, CalendarCheck, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { useEffect, useRef, useState } from "react";
-import doctorsData from "./../data/doctor.json";
+import { apiService, Doctor } from "@/services/api";
 
 const specialtyIcons: Record<string, React.ReactNode> = {
   "طب القلب": <Heart className="w-5 h-5" />,
@@ -16,14 +16,103 @@ const specialtyIcons: Record<string, React.ReactNode> = {
 };
 
 const DoctorsSection = () => {
-  const doctors = doctorsData.doctors;
+  const [doctors, setDoctors] = useState<Doctor[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState("");
   const [visibleCards, setVisibleCards] = useState<number[]>([]);
+  const [locationNames, setLocationNames] = useState<Record<number, string>>({});
+  const [doctorAvailability, setDoctorAvailability] = useState<Record<number, boolean>>({});
   const sectionRef = useRef<HTMLDivElement>(null);
+
+  const fetchLocationName = async (lat: number, lng: number, doctorId: number) => {
+    try {
+      const response = await fetch(
+        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`,
+        {
+          headers: {
+            'Accept-Language': 'ar'
+          }
+        }
+      );
+      const data = await response.json();
+
+      // Extract location parts: country - city - street
+      if (data.address) {
+        const addr = data.address;
+        const country = addr.country || "";
+        const city = addr.city || addr.town || addr.village || addr.state || "";
+        const street = addr.road || addr.street || "";
+
+        const locationParts = [country, city, street].filter(Boolean);
+        const formattedLocation = locationParts.join(' - ');
+
+        if (formattedLocation) {
+          setLocationNames(prev => ({ ...prev, [doctorId]: formattedLocation }));
+        }
+      }
+    } catch (err) {
+      console.error("Failed to fetch location name:", err);
+    }
+  };
+
+  const checkDoctorAvailability = async (doctorId: number) => {
+    try {
+      const response = await apiService.getDoctorBookingInfo(doctorId);
+      if (response.success && response.data) {
+        const days = response.data;
+        // Check if any day is open and has available slots
+        const hasAvailableSlots = days.some((day: any) => {
+          if (day.is_open === 1 && day.slots && day.slots.length > 0) {
+            return day.slots.some((slot: any) => slot.is_available === true);
+          }
+          return false;
+        });
+        setDoctorAvailability(prev => ({ ...prev, [doctorId]: hasAvailableSlots }));
+      }
+    } catch (err) {
+      console.error("Failed to check doctor availability:", err);
+    }
+  };
+
+  useEffect(() => {
+    const fetchDoctors = async () => {
+      try {
+        const response = await apiService.getDoctors();
+        if (response.success && Array.isArray(response.data)) {
+          setDoctors(response.data);
+
+          // Log all doctors' coordinates
+          response.data.forEach((doctor) => {
+            console.log(`Doctor ${doctor.id} (${doctor.name}): lat=${doctor.lat}, lng=${doctor.lng}`);
+          });
+
+          // Fetch location names and check availability for doctors with coordinates
+          response.data.forEach((doctor) => {
+            if (doctor.lat && doctor.lng) {
+              fetchLocationName(doctor.lat, doctor.lng, doctor.id);
+            }
+            // Check availability based on schedule
+            checkDoctorAvailability(doctor.id);
+          });
+        } else {
+          setDoctors([]);
+        }
+      } catch (err: any) {
+        setError(err.message || "فشل تحميل الأطباء");
+        console.error("Failed to fetch doctors:", err);
+        setDoctors([]);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchDoctors();
+  }, []);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
-        if (entries[0].isIntersecting) {
+        if (entries[0].isIntersecting && doctors.length > 0) {
           doctors.forEach((_, i) => {
             setTimeout(() => {
               setVisibleCards((prev) => [...prev, i]);
@@ -63,81 +152,114 @@ const DoctorsSection = () => {
         </div>
 
         {/* Doctors grid */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {doctors.map((doc, i) => (
-            <div
-              key={doc.id}
-              className={`group bg-card rounded-2xl overflow-hidden border border-border/50 shadow-card hover:shadow-elevated transition-all duration-700 hover:-translate-y-2 ${
-                visibleCards.includes(i)
-                  ? "opacity-100 translate-y-0"
-                  : "opacity-0 translate-y-8"
-              }`}
-            >
-              {/* Top accent */}
-              <div className="h-1.5 bg-gradient-primary" />
-
-              <div className="p-6 space-y-4">
-                {/* Avatar & name */}
+        {isLoading ? (
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {[1, 2, 3, 4].map((i) => (
+              <div key={i} className="bg-card rounded-2xl overflow-hidden border border-border/50 shadow-card p-6 space-y-4 animate-pulse">
                 <div className="flex items-center gap-4">
-                  <div className="w-14 h-14 rounded-full bg-gradient-to-br from-primary/20 to-medical-blue/20 flex items-center justify-center border-2 border-primary/20 group-hover:border-primary/40 transition-colors">
-                    <span className="text-xl font-bold text-primary">
-                      {doc.name.charAt(3)}
-                    </span>
+                  <div className="w-14 h-14 rounded-full bg-muted" />
+                  <div className="flex-1 space-y-2">
+                    <div className="h-4 bg-muted rounded w-3/4" />
+                    <div className="h-3 bg-muted rounded w-1/2" />
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <h3 className="font-display font-bold text-foreground truncate">
-                      {doc.name}
-                    </h3>
-                    <div className="flex items-center gap-1 mt-0.5">
-                      <Star className="w-3.5 h-3.5 text-accent fill-accent" />
-                      <span className="text-sm font-semibold text-foreground">{doc.rating}</span>
-                      <span className="text-xs text-muted-foreground">({doc.reviews})</span>
+                </div>
+                <div className="h-10 bg-muted rounded-xl" />
+                <div className="h-4 bg-muted rounded w-2/3" />
+                <div className="flex justify-between">
+                  <div className="h-4 bg-muted rounded w-1/4" />
+                  <div className="h-6 bg-muted rounded w-1/4" />
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : error ? (
+          <div className="bg-destructive/10 border border-destructive/20 text-destructive rounded-2xl p-8 text-center">
+            <AlertCircle className="w-12 h-12 mx-auto mb-4" />
+            <p className="font-medium">{error}</p>
+          </div>
+        ) : doctors.length === 0 ? (
+          <div className="text-center py-12">
+            <p className="text-muted-foreground">لا يوجد أطباء متاحين حالياً</p>
+          </div>
+        ) : (
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {doctors.map((doc, i) => (
+              <div
+                key={doc.id}
+                className={`group bg-card rounded-2xl overflow-hidden border border-border/50 shadow-card hover:shadow-elevated transition-all duration-700 hover:-translate-y-2 ${
+                  visibleCards.includes(i)
+                    ? "opacity-100 translate-y-0"
+                    : "opacity-0 translate-y-8"
+                }`}
+              >
+                {/* Top accent */}
+                <div className="h-1.5 bg-gradient-primary" />
+
+                <div className="p-6 space-y-4">
+                  {/* Avatar & name */}
+                  <div className="flex items-center gap-4">
+                    <div className="w-14 h-14 rounded-full bg-gradient-to-br from-primary/20 to-medical-blue/20 flex items-center justify-center border-2 border-primary/20 group-hover:border-primary/40 transition-colors">
+                      <span className="text-xl font-bold text-primary">
+                        {doc.name.charAt(3)}
+                      </span>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-display font-bold text-foreground truncate">
+                        {doc.name}
+                      </h3>
+                      <div className="flex items-center gap-1 mt-0.5">
+                        <Star className="w-3.5 h-3.5 text-accent fill-accent" />
+                        <span className="text-sm font-semibold text-foreground">{doc.rating}</span>
+                        <span className="text-xs text-muted-foreground">({doc.reviews})</span>
+                      </div>
                     </div>
                   </div>
-                </div>
 
-                {/* Specialty with icon */}
-                <div className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl bg-primary/5 border border-primary/10">
-                  <div className="text-primary">
-                    {specialtyIcons[doc.specialty] || <Stethoscope className="w-5 h-5" />}
+                  {/* Specialty with icon */}
+                  <div className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl bg-primary/5 border border-primary/10">
+                    <div className="text-primary">
+                      {specialtyIcons[doc.specialty] || <Stethoscope className="w-5 h-5" />}
+                    </div>
+                    <span className="text-sm font-medium text-primary">{doc.specialty}</span>
                   </div>
-                  <span className="text-sm font-medium text-primary">{doc.specialty}</span>
-                </div>
 
-                {/* Location */}
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <MapPin className="w-4 h-4 text-muted-foreground/70" />
-                  <span>{doc.location}</span>
-                </div>
+                  {/* Location */}
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <MapPin className="w-4 h-4 text-muted-foreground/70" />
+                    <span className="line-clamp-1">
+                      {locationNames[doc.id] || doc.location}
+                    </span>
+                  </div>
 
-                {/* Price & availability */}
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-bold text-foreground">{doc.price} د.ج</span>
-                  <span
-                    className={`text-xs px-2.5 py-1 rounded-full font-medium ${
-                      doc.available
-                        ? "bg-medical-green/10 text-medical-green border border-medical-green/20"
-                        : "bg-muted text-muted-foreground border border-border"
-                    }`}
-                  >
-                    {doc.available ? "متاح" : "غير متاح"}
-                  </span>
-                </div>
+                  {/* Price & availability */}
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-bold text-foreground">{doc.price} د.ج</span>
+                    <span
+                      className={`text-xs px-2.5 py-1 rounded-full font-medium ${
+                        doctorAvailability[doc.id] !== false
+                          ? "bg-medical-green/10 text-medical-green border border-medical-green/20"
+                          : "bg-muted text-muted-foreground border border-border"
+                      }`}
+                    >
+                      {doctorAvailability[doc.id] !== false ? "متاح" : "غير متاح"}
+                    </span>
+                  </div>
 
-                {/* Book button */}
-                <Link to={`/reservation?doctor=${doc.id}`} className="block">
-                  <Button
-                    className="w-full bg-gradient-primary text-primary-foreground hover:opacity-90 gap-2 transition-all hover:shadow-lg hover:shadow-primary/20"
-                    disabled={!doc.available}
-                  >
-                    <CalendarCheck className="w-4 h-4" />
-                    حجز موعد
-                  </Button>
-                </Link>
+                  {/* Book button */}
+                  <Link to={`/reservation?doctor=${doc.id}`} className="block">
+                    <Button
+                      className="w-full bg-gradient-primary text-primary-foreground hover:opacity-90 gap-2 transition-all hover:shadow-lg hover:shadow-primary/20"
+                      disabled={doctorAvailability[doc.id] === false}
+                    >
+                      <CalendarCheck className="w-4 h-4" />
+                      حجز موعد
+                    </Button>
+                  </Link>
+                </div>
               </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
 
         {/* View all button */}
         <div className="text-center mt-12">

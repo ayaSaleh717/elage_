@@ -63,8 +63,10 @@ const ResetPassword = () => {
         // Auto-login if token returned
         if (response.token) {
           localStorage.setItem("authToken", response.token);
+          console.log(response.token)
           if (response.user) {
             localStorage.setItem("userData", JSON.stringify(response.user));
+            // console.log(response.token);
           }
         }
       } else {

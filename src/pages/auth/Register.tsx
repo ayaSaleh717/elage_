@@ -1,8 +1,8 @@
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Stethoscope, Upload, FileText, X, Mail, Lock, User, ArrowLeft, CheckCircle2 } from "lucide-react";
-import { useState } from "react";
+import { Stethoscope, Upload, FileText, X, Mail, Lock, User, ArrowLeft, CheckCircle2, ChevronDown } from "lucide-react";
+import { useState, useEffect } from "react";
 import { apiService } from "@/services/api";
 
 const heartbeatVideo = "https://scwzacvwp7mrajkx.public.blob.vercel-storage.com/assests/human%20heartbet.mp4";
@@ -15,10 +15,61 @@ const Register = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [specialty, setSpecialty] = useState("");
+  const [specializations, setSpecializations] = useState<string[]>([]);
+  const [isLoadingSpecializations, setIsLoadingSpecializations] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const [registered, setRegistered] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState<{
+    firstName?: string;
+    lastName?: string;
+    email?: string;
+    password?: string;
+    specialty?: string;
+  }>({});
+  const [latitude, setLatitude] = useState<number | null>(null);
+  const [longitude, setLongitude] = useState<number | null>(null);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const fetchSpecializations = async () => {
+      setIsLoadingSpecializations(true);
+      try {
+        const response = await fetch("https://wolflike-merri-nugatory.ngrok-free.dev/api/specializations", {
+          headers: {
+            'ngrok-skip-browser-warning': 'true'
+          }
+        });
+        const data = await response.json();
+        if (data.status === "success" && data.specializations) {
+          setSpecializations(data.specializations);
+        }
+      } catch (err) {
+        console.error("Failed to fetch specializations:", err);
+      } finally {
+        setIsLoadingSpecializations(false);
+      }
+    };
+
+    fetchSpecializations();
+  }, []);
+
+  useEffect(() => {
+    // Get user location on component mount
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          setLatitude(position.coords.latitude);
+          setLongitude(position.coords.longitude);
+          console.log("User location:", position.coords.latitude, position.coords.longitude);
+        },
+        (error) => {
+          console.error("Error getting location:", error);
+          // Don't block registration if location fails
+        }
+      );
+    }
+  }, []);
 
   const handleCertificateUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -30,19 +81,60 @@ const Register = () => {
     setCertificateFile(null);
   };
 
-  const handleRegister = async () => {
-    if (!firstName || !lastName || !email || !password) {
-      setError("الرجاء إدخال جميع الحقول المطلوبة");
-      return;
+  const validateForm = () => {
+    const errors: {
+      firstName?: string;
+      lastName?: string;
+      email?: string;
+      password?: string;
+      specialty?: string;
+    } = {};
+
+    if (!firstName.trim()) {
+      errors.firstName = "الرجاء إدخال الاسم الأول";
+    } else if (firstName.length < 2) {
+      errors.firstName = "الاسم الأول يجب أن يكون حرفين على الأقل";
     }
 
-    if (role === "doctor" && !specialty) {
-      setError("الرجاء إدخال التخصص الطبي");
+    if (!lastName.trim()) {
+      errors.lastName = "الرجاء إدخال اسم العائلة";
+    } else if (lastName.length < 2) {
+      errors.lastName = "اسم العائلة يجب أن يكون حرفين على الأقل";
+    }
+
+    if (!email.trim()) {
+      errors.email = "الرجاء إدخال البريد الإلكتروني";
+    } else if (!/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(email)) {
+      errors.email = "الرجاء إدخال بريد إلكتروني صحيح (مثال: example@gmail.com)";
+    }
+
+    if (!password) {
+      errors.password = "الرجاء إدخال كلمة المرور";
+    } else if (password.length < 6) {
+      errors.password = "كلمة المرور يجب أن تكون 6 أحرف على الأقل";
+    }
+
+    if (role === "doctor") {
+      if (!specialty.trim()) {
+        errors.specialty = "الرجاء إدخال التخصص الطبي";
+      } else if (specialty.length < 3) {
+        errors.specialty = "التخصص يجب أن يكون 3 أحرف على الأقل";
+      }
+    }
+
+    setFieldErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
+  const handleRegister = async () => {
+    setError("");
+    setFieldErrors({});
+
+    if (!validateForm()) {
       return;
     }
 
     setIsLoading(true);
-    setError("");
 
     try {
       const response = await apiService.register({
@@ -53,6 +145,8 @@ const Register = () => {
         role,
         specialization: role === "doctor" ? specialty : undefined,
         degree_file: role === "doctor" ? certificateFile || undefined : undefined,
+        latitude: latitude !== null ? latitude.toString() : undefined,
+        longitude: longitude !== null ? longitude.toString() : undefined,
       });
 
       if (response.success) {
@@ -230,10 +324,19 @@ const Register = () => {
                   <User className="absolute right-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/50" />
                   <Input
                     placeholder="الاسم الأول"
-                    className="h-13 pr-10 rounded-xl bg-muted/30 border-border/40 focus:bg-background focus:border-primary/50 focus:shadow-[0_0_0_3px_hsl(174_62%_40%/0.1)] transition-all"
-                    onChange={(e) => setFirstName(e.target.value)}
+                    className={`h-13 pr-10 rounded-xl bg-muted/30 border-border/40 focus:bg-background focus:border-primary/50 focus:shadow-[0_0_0_3px_hsl(174_62%_40%/0.1)] transition-all ${fieldErrors.firstName ? "border-destructive focus:border-destructive" : ""}`}
+                    value={firstName}
+                    onChange={(e) => {
+                      setFirstName(e.target.value);
+                      if (fieldErrors.firstName) {
+                        setFieldErrors(prev => ({ ...prev, firstName: undefined }));
+                      }
+                    }}
                   />
                 </div>
+                {fieldErrors.firstName && (
+                  <p className="text-xs text-destructive mt-1">{fieldErrors.firstName}</p>
+                )}
               </div>
               <div className="space-y-2">
                 <label className="text-sm font-medium text-foreground">العائلة</label>
@@ -241,10 +344,19 @@ const Register = () => {
                   <User className="absolute right-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/50" />
                   <Input
                     placeholder="اسم العائلة"
-                    className="h-13 pr-10 rounded-xl bg-muted/30 border-border/40 focus:bg-background focus:border-primary/50 focus:shadow-[0_0_0_3px_hsl(174_62%_40%/0.1)] transition-all"
-                    onChange={(e) => setLastName(e.target.value)}
+                    className={`h-13 pr-10 rounded-xl bg-muted/30 border-border/40 focus:bg-background focus:border-primary/50 focus:shadow-[0_0_0_3px_hsl(174_62%_40%/0.1)] transition-all ${fieldErrors.lastName ? "border-destructive focus:border-destructive" : ""}`}
+                    value={lastName}
+                    onChange={(e) => {
+                      setLastName(e.target.value);
+                      if (fieldErrors.lastName) {
+                        setFieldErrors(prev => ({ ...prev, lastName: undefined }));
+                      }
+                    }}
                   />
                 </div>
+                {fieldErrors.lastName && (
+                  <p className="text-xs text-destructive mt-1">{fieldErrors.lastName}</p>
+                )}
               </div>
             </div>
 
@@ -255,11 +367,20 @@ const Register = () => {
                 <Input
                   type="email"
                   placeholder="email@example.com"
-                  className="h-13 pr-10 rounded-xl bg-muted/30 border-border/40 focus:bg-background focus:border-primary/50 focus:shadow-[0_0_0_3px_hsl(174_62%_40%/0.1)] transition-all"
+                  className={`h-13 pr-10 rounded-xl bg-muted/30 border-border/40 focus:bg-background focus:border-primary/50 focus:shadow-[0_0_0_3px_hsl(174_62%_40%/0.1)] transition-all ${fieldErrors.email ? "border-destructive focus:border-destructive" : ""}`}
                   dir="ltr"
-                  onChange={(e) => setEmail(e.target.value)}
+                  value={email}
+                  onChange={(e) => {
+                    setEmail(e.target.value);
+                    if (fieldErrors.email) {
+                      setFieldErrors(prev => ({ ...prev, email: undefined }));
+                    }
+                  }}
                 />
               </div>
+              {fieldErrors.email && (
+                <p className="text-xs text-destructive mt-1">{fieldErrors.email}</p>
+              )}
             </div>
 
             <div className="space-y-2">
@@ -269,11 +390,20 @@ const Register = () => {
                 <Input
                   type="password"
                   placeholder="••••••••"
-                  className="h-13 pr-10 rounded-xl bg-muted/30 border-border/40 focus:bg-background focus:border-primary/50 focus:shadow-[0_0_0_3px_hsl(174_62%_40%/0.1)] transition-all"
+                  className={`h-13 pr-10 rounded-xl bg-muted/30 border-border/40 focus:bg-background focus:border-primary/50 focus:shadow-[0_0_0_3px_hsl(174_62%_40%/0.1)] transition-all ${fieldErrors.password ? "border-destructive focus:border-destructive" : ""}`}
                   dir="ltr"
-                  onChange={(e) => setPassword(e.target.value)}
+                  value={password}
+                  onChange={(e) => {
+                    setPassword(e.target.value);
+                    if (fieldErrors.password) {
+                      setFieldErrors(prev => ({ ...prev, password: undefined }));
+                    }
+                  }}
                 />
               </div>
+              {fieldErrors.password && (
+                <p className="text-xs text-destructive mt-1">{fieldErrors.password}</p>
+              )}
             </div>
 
             {role === "doctor" && (
@@ -281,13 +411,33 @@ const Register = () => {
                 <div className="space-y-2">
                   <label className="text-sm font-medium text-foreground">التخصص الطبي</label>
                   <div className="relative">
-                    <Stethoscope className="absolute right-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/50" />
-                    <Input
-                      placeholder="مثال: طب القلب"
-                      className="h-13 pr-10 rounded-xl bg-muted/30 border-border/40 focus:bg-background focus:border-primary/50 focus:shadow-[0_0_0_3px_hsl(174_62%_40%/0.1)] transition-all"
-                      onChange={(e) => setSpecialty(e.target.value)}
-                    />
+                    <Stethoscope className="absolute right-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/50 z-10" />
+                    <select
+                      className={`h-13 pr-10 pl-10 w-full rounded-xl bg-muted/30 border-border/40 focus:bg-background focus:border-primary/50 focus:shadow-[0_0_0_3px_hsl(174_62%_40%/0.1)] transition-all appearance-none text-foreground text-sm ${fieldErrors.specialty ? "border-destructive focus:border-destructive" : ""}`}
+                      value={specialty}
+                      onChange={(e) => {
+                        setSpecialty(e.target.value);
+                        if (fieldErrors.specialty) {
+                          setFieldErrors(prev => ({ ...prev, specialty: undefined }));
+                        }
+                      }}
+                      disabled={isLoadingSpecializations}
+                    >
+                      <option value="">اختر التخصص</option>
+                      {specializations.map((spec) => (
+                        <option key={spec} value={spec}>
+                          {spec}
+                        </option>
+                      ))}
+                    </select>
+                    <ChevronDown className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/50 pointer-events-none" />
                   </div>
+                  {fieldErrors.specialty && (
+                    <p className="text-xs text-destructive mt-1">{fieldErrors.specialty}</p>
+                  )}
+                  {isLoadingSpecializations && (
+                    <p className="text-xs text-muted-foreground mt-1">جاري تحميل التخصصات...</p>
+                  )}
                 </div>
 
                 {/* Certificate Upload */}

@@ -28,6 +28,10 @@ const ForgotPassword = () => {
       const response = await apiService.forgotPassword({ email });
       if (response.success) {
         setSubmitted(true);
+        // Redirect to reset page with email (using test token for development)
+        setTimeout(() => {
+          window.location.href = `/reset-password?token=test-token-123&email=${encodeURIComponent(email)}`;
+        }, 1500);
       } else {
         setError(response.message || "حدث خطأ أثناء إرسال الرابط");
       }
@@ -204,16 +208,18 @@ const ForgotPassword = () => {
               </Link>
 
               {/* Test button - للتجربة فقط */}
-              <Link to={`/reset-password?token=test-token-123&email=${encodeURIComponent(email || 'test@example.com')}`}>
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="w-full h-11 rounded-xl border-dashed border-amber-500/50 text-amber-600 hover:bg-amber-500/10 hover:text-amber-700"
-                >
-                  <FlaskConical className="w-4 h-4 ml-2" />
-                  تجربة صفحة إعادة تعيين كلمة المرور
-                </Button>
-              </Link>
+              {email && (
+                <Link to={`/reset-password?token=${Date.now()}&email=${encodeURIComponent(email)}`}>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="w-full h-11 rounded-xl border-dashed border-amber-500/50 text-amber-600 hover:bg-amber-500/10 hover:text-amber-700"
+                  >
+                    <FlaskConical className="w-4 h-4 ml-2" />
+                    تجربة صفحة إعادة تعيين كلمة المرور
+                  </Button>
+                </Link>
+              )}
             </>
           )}
         </div>

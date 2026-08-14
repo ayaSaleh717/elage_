@@ -2,17 +2,36 @@ import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Stethoscope, Mail, Lock, ArrowLeft } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { apiService } from "@/services/api";
 
 const heartbeatVideo = "https://scwzacvwp7mrajkx.public.blob.vercel-storage.com/assests/human%20heartbet.mp4";
 
 const Login = () => {
-  const [email, setEmail] = useState("ss@gmail.com");
-  const [password, setPassword] = useState("12345");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
+  const [latitude, setLatitude] = useState<number | null>(null);
+  const [longitude, setLongitude] = useState<number | null>(null);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    // Get user location on component mount
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          setLatitude(position.coords.latitude);
+          setLongitude(position.coords.longitude);
+          console.log("User location:", position.coords.latitude, position.coords.longitude);
+        },
+        (error) => {
+          console.error("Error getting location:", error);
+          // Don't block login if location fails
+        }
+      );
+    }
+  }, []);
 
   const handleLogin = async () => {
     if (!email || !password) {
@@ -24,7 +43,12 @@ const Login = () => {
     setError("");
 
     try {
-      const response = await apiService.login({ email, password });
+      const response = await apiService.login({
+        email,
+        password,
+        latitude: latitude !== null ? latitude.toString() : undefined,
+        longitude: longitude !== null ? longitude.toString() : undefined,
+      });
 
       if (response.success) {
         navigate("/");
