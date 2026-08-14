@@ -12,6 +12,7 @@ const ForgotPassword = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState("");
+  const [apiToken, setApiToken] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -28,9 +29,15 @@ const ForgotPassword = () => {
       const response = await apiService.forgotPassword({ email });
       if (response.success) {
         setSubmitted(true);
-        // Redirect to reset page with email (using test token for development)
+        // Store token from API response
+        if (response.token) {
+          setApiToken(response.token);
+          console.log("API Token received:", response.token);
+        }
+        // Redirect to reset page with email and token
         setTimeout(() => {
-          window.location.href = `/reset-password?token=test-token-123&email=${encodeURIComponent(email)}`;
+          const tokenToUse = apiToken || response.token || "test-token-123";
+          window.location.href = `/reset-password?token=${encodeURIComponent(tokenToUse)}&email=${encodeURIComponent(email)}`;
         }, 1500);
       } else {
         setError(response.message || "حدث خطأ أثناء إرسال الرابط");
@@ -209,11 +216,11 @@ const ForgotPassword = () => {
 
               {/* Test button - للتجربة فقط */}
               {email && (
-                <Link to={`/reset-password?token=${Date.now()}&email=${encodeURIComponent(email)}`}>
+                <Link to={`/reset-password?token=${encodeURIComponent(apiToken )}&email=${encodeURIComponent(email)}`}>
                   <Button
                     type="button"
                     variant="outline"
-                    className="w-full h-11 rounded-xl border-dashed border-amber-500/50 text-amber-600 hover:bg-amber-500/10 hover:text-amber-700"
+                    className="w-full h-11 rounded-xl border-dashed border-medical-green/50 text-medical-green hover:bg-medical-green/10 hover:text-medical-green"
                   >
                     <FlaskConical className="w-4 h-4 ml-2" />
                     تجربة صفحة إعادة تعيين كلمة المرور

@@ -16,6 +16,9 @@ const ResetPassword = () => {
   const email = searchParams.get("email") || "";
   const passedPassword = (location.state as any)?.password || "";
 
+  console.log("Reset Password - Token:", token);
+  console.log("Reset Password - Email:", email);
+
   const [password, setPassword] = useState(passedPassword);
   const [passwordConfirmation, setPasswordConfirmation] = useState(passedPassword);
   const [isLoading, setIsLoading] = useState(false);
