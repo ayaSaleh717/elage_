@@ -1,5 +1,15 @@
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Stethoscope, Menu, X, Moon, Sun, LogOut, LayoutDashboard, User } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useTheme } from "@/components/ThemeProvider";
@@ -9,6 +19,7 @@ const Navbar = () => {
   const [open, setOpen] = useState(false);
   const { theme, toggleTheme } = useTheme();
   const [user, setUser] = useState<any>(null);
+  const [showLogoutDialog, setShowLogoutDialog] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -17,8 +28,13 @@ const Navbar = () => {
   }, []);
 
   const handleLogout = () => {
+    setShowLogoutDialog(true);
+  };
+
+  const confirmLogout = () => {
     apiService.logout();
     setUser(null);
+    setShowLogoutDialog(false);
     navigate("/");
   };
 
@@ -30,16 +46,17 @@ const Navbar = () => {
   };
 
   return (
-    <nav className="fixed top-0 inset-x-0 z-50 glass-card border-b">
-      <div className="container flex items-center justify-between h-16">
-        <Link to="/" className="flex items-center gap-2">
-          <div className="w-10 h-10 rounded-xl bg-gradient-primary flex items-center justify-center">
-            <Stethoscope className="w-5 h-5 text-primary-foreground" />
-          </div>
-          <span className="font-display text-xl font-bold text-foreground">i-Shifa <br />
-            <pre className="text-sm">آي- شفا </pre>
-          </span>
-        </Link>
+    <>
+      <nav className="fixed top-0 inset-x-0 z-50 glass-card border-b">
+        <div className="container flex items-center justify-between h-16">
+          <Link to="/" className="flex items-center gap-2">
+            <div className="w-10 h-10 rounded-xl bg-gradient-primary flex items-center justify-center">
+              <Stethoscope className="w-5 h-5 text-primary-foreground" />
+            </div>
+            <span className="font-display text-xl font-bold text-foreground">i-Shifa <br />
+              <pre className="text-sm">آي- شفا </pre>
+            </span>
+          </Link>
 
         <div className="hidden md:flex items-center gap-8">
           <a href="#features" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">المميزات</a>
@@ -163,6 +180,24 @@ const Navbar = () => {
         </div>
       )}
     </nav>
+
+    <AlertDialog open={showLogoutDialog} onOpenChange={setShowLogoutDialog}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>تأكيد تسجيل الخروج</AlertDialogTitle>
+          <AlertDialogDescription>
+            هل أنت متأكد من أنك تريد تسجيل الخروج؟
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>إلغاء</AlertDialogCancel>
+          <AlertDialogAction onClick={confirmLogout} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+            نعم، تسجيل الخروج
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+    </>
   );
 };
 

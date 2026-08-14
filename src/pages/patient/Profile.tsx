@@ -1,31 +1,125 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { User, Scale, Ruler, Wallet, FileText, Upload, Edit2 } from "lucide-react";
+import { apiService } from "@/services/api";
 
 const Profile = () => {
   const [isEditing, setIsEditing] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isFetching, setIsFetching] = useState(true);
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState(false);
   const [profileData, setProfileData] = useState({
-    name: "أحمد محمد",
-    age: 35,
-    weight: 75,
-    height: 175,
-    balance: 350,
-    email: "ahmed.mohammed@example.com",
-    phone: "+966 50 123 4567"
+    name: "",
+    age: 0,
+    weight: 0,
+    height: 0,
+    balance: 0,
+    email: "",
+    phone: ""
   });
 
-  const handleSave = () => {
-    setIsEditing(false);
-    // TODO: Save to backend
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        // Get current user data for name and email
+        const currentUser = apiService.getCurrentUser();
+
+        // Fetch profile data for other fields
+        const response = await apiService.getPatientProfile();
+        if (response.success && response.data) {
+          // Handle both response structures: direct data or nested profile
+          const profileData = response.data.profile || response.data;
+          setProfileData({
+            name: currentUser?.name || currentUser?.first_name || profileData.first_name || profileData.name || "",
+            email: currentUser?.email || profileData.email || "",
+            age: profileData.age || 0,
+            weight: profileData.weight || 0,
+            height: profileData.height || 0,
+            balance: profileData.balance || 0,
+            phone: profileData.phone || ""
+          });
+        } else if (currentUser) {
+          // Fallback to user data if profile fetch fails
+          setProfileData({
+            name: currentUser.name || currentUser.first_name || "",
+            email: currentUser.email || "",
+            age: 0,
+            weight: 0,
+            height: 0,
+            balance: 0,
+            phone: ""
+          });
+        }
+      } catch (err: any) {
+        console.error("Failed to fetch profile:", err);
+        // Fallback to current user data on error
+        const currentUser = apiService.getCurrentUser();
+        if (currentUser) {
+          setProfileData({
+            name: currentUser.name || currentUser.first_name || "",
+            email: currentUser.email || "",
+            age: 0,
+            weight: 0,
+            height: 0,
+            balance: 0,
+            phone: ""
+          });
+        }
+        setError("فشل تحميل الملف الشخصي");
+      } finally {
+        setIsFetching(false);
+      }
+    };
+
+    fetchProfile();
+  }, []);
+
+  const handleSave = async () => {
+    setIsLoading(true);
+    setError("");
+    setSuccess(false);
+
+    try {
+      const response = await apiService.updatePatientProfile({
+        age: profileData.age,
+        height: profileData.height,
+        weight: profileData.weight,
+        phone: profileData.phone,
+      });
+
+      if (response.success) {
+        setSuccess(true);
+        setIsEditing(false);
+        setTimeout(() => setSuccess(false), 3000);
+      }
+    } catch (err: any) {
+      setError(err.message || "حدث خطأ أثناء تحديث الملف الشخصي");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
     <div className="space-y-6">
-      {/* Personal Information Card */}
-      <Card>
+      {isFetching ? (
+        <Card>
+          <CardContent className="p-6">
+            <div className="animate-pulse space-y-4">
+              <div className="h-4 bg-muted rounded w-1/4" />
+              <div className="h-11 bg-muted rounded" />
+              <div className="h-11 bg-muted rounded" />
+              <div className="h-11 bg-muted rounded" />
+            </div>
+          </CardContent>
+        </Card>
+      ) : (
+        <>
+          {/* Personal Information Card */}
+          <Card>
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle className="text-lg font-display">المعلومات الشخصية</CardTitle>
           <Button
@@ -131,9 +225,15 @@ const Profile = () => {
           </div>
           
           {isEditing && (
-            <div className="flex justify-end pt-4">
-              <Button onClick={handleSave} className="h-11">
-                حفظ التغييرات
+            <div className="flex justify-end pt-4 space-y-3">
+              {error && (
+                <p className="text-sm text-destructive w-full text-right">{error}</p>
+              )}
+              {success && (
+                <p className="text-sm text-medical-green w-full text-right">تم تحديث الملف الشخصي بنجاح</p>
+              )}
+              <Button onClick={handleSave} className="h-11" disabled={isLoading}>
+                {isLoading ? "جاري الحفظ..." : "حفظ التغييرات"}
               </Button>
             </div>
           )}
@@ -158,8 +258,30 @@ const Profile = () => {
           </div>
         </CardContent>
       </Card> */}
+
+      {/* Medical Records Card */}
+      {/* <Card>
+        <CardHeader>
+          <CardTitle className="text-lg font-display flex items-center gap-2">
+            <FileText className="w-5 h-5 text-primary" />
+            السجلات الطبية
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="text-center py-8 text-muted-foreground">
+            <FileText className="w-12 h-12 mx-auto mb-3 opacity-50" />
+            <p>لا توجد سجلات طبية حالياً</p>
+            <Button variant="outline" className="mt-4">
+              <Upload className="w-4 h-4 ml-2" />
+              رفع سجل طبي
+            </Button>
+          </div>
+        </CardContent>
+      </Card> */}
+        </>
+      )}
     </div>
-  )
-}
+  );
+};
 
 export default Profile

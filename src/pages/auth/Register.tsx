@@ -150,7 +150,12 @@ const Register = () => {
       });
 
       if (response.success) {
-        setRegistered(true);
+        // Redirect based on role after successful registration
+        if (role === 'doctor') {
+          navigate('/doctor');
+        } else {
+          navigate('/');
+        }
       } else {
         setError(response.message || "فشل إنشاء الحساب");
       }

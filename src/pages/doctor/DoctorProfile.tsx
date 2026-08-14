@@ -2,7 +2,8 @@ import DashboardLayout from "@/components/DashboardLayout";
 import { LayoutDashboard, Users, Stethoscope, Clock, MessageSquare, DollarSign, User, Mail, Phone, MapPin, GraduationCap, Award, Star, Edit3, Camera, Globe, Calendar } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { apiService } from "@/services/api";
 
 const sidebarItems = [
   { icon: <LayoutDashboard className="w-4 h-4" />, label: "الإحصائيات", path: "/doctor" },
@@ -16,36 +17,181 @@ const sidebarItems = [
 
 const DoctorProfile = () => {
   const [isEditing, setIsEditing] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState(false);
+  const [latitude, setLatitude] = useState<number | null>(null);
+  const [longitude, setLongitude] = useState<number | null>(null);
+  const [isGettingLocation, setIsGettingLocation] = useState(false);
   const [profile, setProfile] = useState({
-    firstName: "أحمد",
-    lastName: "الحلبي",
-    email: "dr.ahmed@ishifa.com",
-    phone: "+963 944 123 456",
-    specialty: "طب القلب",
-    subSpecialty: "قسطرة القلب التداخلية",
-    experience: "15",
-    degree: "دكتوراه في طب القلب",
-    university: "جامعة دمشق",
-    license: "SY-MOH-2024-4521",
-    bio: "طبيب قلب متخصص في القسطرة التداخلية مع خبرة 15 عاماً. حاصل على البورد السوري والعربي في أمراض القلب. عملت في مشفى الأسد الجامعي ومشفى المواساة. أسعى لتقديم أفضل رعاية طبية لمرضاي.",
-    location: "دمشق، سوريا",
-    languages: "العربية، الإنجليزية",
-    consultationFee: "50000",
-    followUpFee: "30000",
+    firstName: "",
+    lastName: "",
+    email: "",
+    phone: "",
+    specialty: "",
+    subSpecialty: "",
+    experience: "",
+    degree: "",
+    university: "",
+    license: "",
+    bio: "",
+    location: "",
+    languages: "",
+    consultationFee: "",
+    followUpFee: "",
+    appointmentsCount: 0,
   });
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const response = await apiService.getDoctorProfile();
+        if (response.success && response.data) {
+          // Handle nested profile structure
+          const profileData = response.data.profile || response.data;
+          const currentUser = apiService.getCurrentUser();
+
+          setProfile({
+            firstName: profileData.first_name || "",
+            lastName: profileData.last_name || "",
+            email: currentUser?.email || "",
+            phone: profileData.phone || "",
+            specialty: profileData.specialization || "",
+            subSpecialty: profileData.sub_specialization || "",
+            experience: profileData.experience_years?.toString() || "",
+            degree: profileData.degree || "",
+            university: profileData.university || "",
+            license: profileData.license_number || "",
+            bio: profileData.bio || "",
+            location: "",
+            languages: profileData.languages || "",
+            consultationFee: "",
+            followUpFee: "",
+            appointmentsCount: profileData.appointments_count || 0,
+          });
+        }
+      } catch (error) {
+        console.error("Failed to fetch doctor profile:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchProfile();
+  }, []);
 
   const handleChange = (field: string, value: string) => {
     setProfile(prev => ({ ...prev, [field]: value }));
   };
 
-  const handleSave = () => {
-    setIsEditing(false);
+  const handleGetLocation = () => {
+    if (!navigator.geolocation) {
+      setError("المتصفح لا يدعم تحديد الموقع");
+      return;
+    }
+
+    setIsGettingLocation(true);
+    setError("");
+
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        const lat = position.coords.latitude;
+        const lng = position.coords.longitude;
+        setLatitude(lat);
+        setLongitude(lng);
+
+        // Reverse geocoding to get address
+        try {
+          const response = await fetch(
+            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&accept-language=ar`
+          );
+          const data = await response.json();
+
+          if (data && data.address) {
+            const address = data.address;
+            const city = address.city || address.town || address.village || address.county || "";
+            const country = address.country || "";
+            const street = address.road || address.street || "";
+
+            const locationText = [street, city, country].filter(Boolean).join(", ");
+            setProfile(prev => ({
+              ...prev,
+              location: locationText
+            }));
+          } else {
+            // Fallback to coordinates if geocoding fails
+            setProfile(prev => ({
+              ...prev,
+              location: `${lat.toFixed(6)}, ${lng.toFixed(6)}`
+            }));
+          }
+        } catch (geocodingError) {
+          console.error("Geocoding error:", geocodingError);
+          // Fallback to coordinates if geocoding fails
+          setProfile(prev => ({
+            ...prev,
+            location: `${lat.toFixed(6)}, ${lng.toFixed(6)}`
+          }));
+        }
+
+        setIsGettingLocation(false);
+      },
+      (error) => {
+        console.error("Error getting location:", error);
+        setError("فشل في الحصول على الموقع. يرجى السماح بالوصول إلى الموقع");
+        setIsGettingLocation(false);
+      }
+    );
+  };
+
+  const handleSave = async () => {
+    setIsSaving(true);
+    setError("");
+    setSuccess(false);
+
+    try {
+      const response = await apiService.updateDoctorProfile({
+        first_name: profile.firstName,
+        last_name: profile.lastName,
+        phone: profile.phone,
+        specialization: profile.specialty,
+        sub_specialization: profile.subSpecialty,
+        experience_years: parseInt(profile.experience) || 0,
+        languages: profile.languages,
+        license_number: profile.license,
+        degree: profile.degree,
+        university: profile.university,
+        bio: profile.bio,
+      });
+
+      if (response.success) {
+        setSuccess(true);
+        setIsEditing(false);
+        setTimeout(() => setSuccess(false), 3000);
+      }
+    } catch (err: any) {
+      setError(err.message || "حدث خطأ أثناء تحديث الملف الشخصي");
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
     <DashboardLayout title="الملف الشخصي" items={sidebarItems} role="doctor">
-      {/* Profile Header */}
-      <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm overflow-hidden mb-6">
+      {isLoading ? (
+        <div className="space-y-6">
+          <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm p-6">
+            <div className="animate-pulse space-y-4">
+              <div className="h-8 bg-muted rounded w-1/3" />
+              <div className="h-4 bg-muted rounded w-1/2" />
+            </div>
+          </div>
+        </div>
+      ) : (
+        <>
+          {/* Profile Header */}
+          <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm overflow-hidden mb-6">
         {/* Cover */}
         <div className="h-28 sm:h-36 bg-gradient-to-br from-primary via-teal-500 to-emerald-400 relative">
           <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4xIj48cGF0aCBkPSJNMzYgMzRoLTJ2LTRoMnYtNGgydjRoNHYyaC00djRoLTJ2LTR6bTAtMzBoLTJ2LTRoMlYwaDJ2NGg0djJoLTR2NGgtMlY0em0tMzAgMGgtMnYtNGgyVjBoMnY0aDR2MmgtNHY0aC0yVjR6Ii8+PC9nPjwvZz48L3N2Zz4=')] opacity-30" />
@@ -78,15 +224,24 @@ const DoctorProfile = () => {
             <Button
               onClick={() => isEditing ? handleSave() : setIsEditing(true)}
               size="sm"
+              disabled={isSaving}
               className={`rounded-xl gap-1.5 text-xs ${isEditing ? "bg-emerald-600 hover:bg-emerald-700" : "bg-primary"}`}
             >
-              {isEditing ? (
+              {isSaving ? (
+                <>جاري الحفظ...</>
+              ) : isEditing ? (
                 <>حفظ التغييرات</>
               ) : (
                 <><Edit3 className="w-3.5 h-3.5" />تعديل</>
               )}
             </Button>
           </div>
+          {error && (
+            <div className="mt-2 text-xs text-destructive">{error}</div>
+          )}
+          {success && (
+            <div className="mt-2 text-xs text-emerald-600 dark:text-emerald-400">تم تحديث الملف الشخصي بنجاح</div>
+          )}
         </div>
       </div>
 
@@ -144,9 +299,29 @@ const DoctorProfile = () => {
               <div>
                 <label className="text-[10px] sm:text-xs text-muted-foreground mb-1 block flex items-center gap-1"><MapPin className="w-3 h-3" />الموقع</label>
                 {isEditing ? (
-                  <Input value={profile.location} onChange={(e) => handleChange("location", e.target.value)} className="h-9 sm:h-10 rounded-lg text-xs sm:text-sm" />
+                  <div className="flex gap-2">
+                    <Input 
+                      value={profile.location} 
+                      onChange={(e) => handleChange("location", e.target.value)} 
+                      className="h-9 sm:h-10 rounded-lg text-xs sm:text-sm flex-1" 
+                      placeholder="خط العرض، خط الطول"
+                    />
+                    <Button
+                      type="button"
+                      onClick={handleGetLocation}
+                      disabled={isGettingLocation}
+                      size="sm"
+                      className="h-9 sm:h-10 px-3 rounded-lg bg-primary hover:bg-primary/90"
+                    >
+                      {isGettingLocation ? (
+                        <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      ) : (
+                        <MapPin className="w-4 h-4" />
+                      )}
+                    </Button>
+                  </div>
                 ) : (
-                  <p className="text-xs sm:text-sm font-medium text-foreground p-2 bg-slate-50 dark:bg-slate-900/50 rounded-lg">{profile.location}</p>
+                  <p className="text-xs sm:text-sm font-medium text-foreground p-2 bg-slate-50 dark:bg-slate-900/50 rounded-lg">{profile.location || "لم يتم تحديد الموقع"}</p>
                 )}
               </div>
             </div>
@@ -170,7 +345,7 @@ const DoctorProfile = () => {
           </div>
 
           {/* Fees */}
-          <div className="bg-white dark:bg-slate-800 rounded-xl sm:rounded-2xl p-4 sm:p-6 border border-slate-100 dark:border-slate-700 shadow-sm">
+          {/* <div className="bg-white dark:bg-slate-800 rounded-xl sm:rounded-2xl p-4 sm:p-6 border border-slate-100 dark:border-slate-700 shadow-sm">
             <h3 className="font-bold text-foreground text-sm sm:text-base mb-4 flex items-center gap-2">
               <DollarSign className="w-4 h-4 text-primary" />
               رسوم الاستشارة
@@ -193,7 +368,7 @@ const DoctorProfile = () => {
                 )}
               </div>
             </div>
-          </div>
+          </div> */}
         </div>
 
         {/* Right Column - Professional Info */}
@@ -277,29 +452,23 @@ const DoctorProfile = () => {
           </div>
 
           {/* Quick Stats */}
-          <div className="bg-gradient-to-br from-primary/5 to-teal-50/50 dark:from-primary/10 dark:to-teal-900/20 rounded-xl sm:rounded-2xl p-4 sm:p-5 border border-primary/20 dark:border-primary/30">
+          {/* <div className="bg-gradient-to-br from-primary/5 to-teal-50/50 dark:from-primary/10 dark:to-teal-900/20 rounded-xl sm:rounded-2xl p-4 sm:p-5 border border-primary/20 dark:border-primary/30">
             <h3 className="font-bold text-foreground text-xs sm:text-sm mb-3">إحصائيات سريعة</h3>
             <div className="grid grid-cols-2 gap-2 sm:gap-3">
               <div className="text-center p-2 sm:p-3 rounded-lg bg-white/60 dark:bg-slate-800/60">
-                <p className="text-lg sm:text-xl font-bold text-primary">342</p>
-                <p className="text-[9px] sm:text-[10px] text-muted-foreground">مريض</p>
+                <p className="text-lg sm:text-xl font-bold text-primary">{profile.appointmentsCount || 0}</p>
+                <p className="text-[9px] sm:text-[10px] text-muted-foreground">مواعيد</p>
               </div>
               <div className="text-center p-2 sm:p-3 rounded-lg bg-white/60 dark:bg-slate-800/60">
-                <p className="text-lg sm:text-xl font-bold text-primary">1,250</p>
-                <p className="text-[9px] sm:text-[10px] text-muted-foreground">استشارة</p>
-              </div>
-              <div className="text-center p-2 sm:p-3 rounded-lg bg-white/60 dark:bg-slate-800/60">
-                <p className="text-lg sm:text-xl font-bold text-amber-500">4.8</p>
-                <p className="text-[9px] sm:text-[10px] text-muted-foreground">تقييم</p>
-              </div>
-              <div className="text-center p-2 sm:p-3 rounded-lg bg-white/60 dark:bg-slate-800/60">
-                <p className="text-lg sm:text-xl font-bold text-primary">15</p>
+                <p className="text-lg sm:text-xl font-bold text-primary">{profile.experience || 0}</p>
                 <p className="text-[9px] sm:text-[10px] text-muted-foreground">سنة خبرة</p>
               </div>
             </div>
-          </div>
+          </div> */}
         </div>
       </div>
+        </>
+      )}
     </DashboardLayout>
   );
 };

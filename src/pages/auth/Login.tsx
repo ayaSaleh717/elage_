@@ -51,7 +51,13 @@ const Login = () => {
       });
 
       if (response.success) {
-        navigate("/");
+        // Check user role and redirect accordingly
+        const user = response.user;
+        if (user?.role === 'doctor') {
+          navigate('/doctor');
+        } else {
+          navigate('/');
+        }
       } else {
         setError(response.message || "فشل تسجيل الدخول");
       }

@@ -53,6 +53,13 @@ export interface BookAppointmentRequest {
   end_time: string;
 }
 
+export interface UpdatePatientProfileRequest {
+  age: number;
+  height: number;
+  weight: number;
+  phone: string;
+}
+
 export interface Doctor {
   id: number;
   first_name: string;
@@ -465,6 +472,148 @@ class ApiService {
       return { success: true, data: result.data || result, message: result.message };
     } catch (error) {
       console.error('Get doctor schedule error:', error);
+      throw error;
+    }
+  }
+
+  // Update Patient Profile
+  async updatePatientProfile(data: UpdatePatientProfileRequest): Promise<{ success: boolean; message?: string; data?: any }> {
+    try {
+      const response = await this.request('/api/patient/profile', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      });
+
+      const result = await response.json();
+      console.log('Update Patient Profile API Response:', result);
+
+      if (!response.ok) {
+        const error: any = new Error(result.message || 'حدث خطأ أثناء تحديث الملف الشخصي');
+        error.status = response.status;
+        error.errors = result.errors;
+        throw error;
+      }
+
+      return { success: true, message: result.message || 'تم تحديث الملف الشخصي بنجاح', data: result.data };
+    } catch (error) {
+      console.error('Update patient profile error:', error);
+      throw error;
+    }
+  }
+
+  // Get Patient Profile
+  async getPatientProfile(): Promise<{ success: boolean; data?: any; message?: string }> {
+    try {
+      const response = await this.request('/api/patient/profile', {
+        method: 'GET',
+      });
+
+      const result = await response.json();
+      console.log('Get Patient Profile API Response:', result);
+
+      if (!response.ok) {
+        const error: any = new Error(result.message || 'حدث خطأ أثناء جلب الملف الشخصي');
+        error.status = response.status;
+        throw error;
+      }
+
+      return { success: true, data: result.data || result, message: result.message };
+    } catch (error) {
+      console.error('Get patient profile error:', error);
+      throw error;
+    }
+  }
+
+  // Get Patient Dashboard
+  async getPatientDashboard(): Promise<{ success: boolean; data?: any; message?: string }> {
+    try {
+      const response = await this.request('/api/patient/dashboard', {
+        method: 'GET',
+      });
+
+      const result = await response.json();
+      console.log('Get Patient Dashboard API Response:', result);
+
+      if (!response.ok) {
+        const error: any = new Error(result.message || 'حدث خطأ أثناء جلب بيانات لوحة التحكم');
+        error.status = response.status;
+        throw error;
+      }
+
+      return { success: true, data: result.data || result, message: result.message };
+    } catch (error) {
+      console.error('Get patient dashboard error:', error);
+      throw error;
+    }
+  }
+
+  // Get Patient Consultations
+  async getPatientConsultations(): Promise<{ success: boolean; data?: any; message?: string }> {
+    try {
+      const response = await this.request('/api/patient/consultations', {
+        method: 'GET',
+      });
+
+      const result = await response.json();
+      console.log('Get Patient Consultations API Response:', result);
+
+      if (!response.ok) {
+        const error: any = new Error(result.message || 'حدث خطأ أثناء جلب الاستشارات');
+        error.status = response.status;
+        throw error;
+      }
+
+      return { success: true, data: result.data || result, message: result.message };
+    } catch (error) {
+      console.error('Get patient consultations error:', error);
+      throw error;
+    }
+  }
+
+  // Get Doctor Profile
+  async getDoctorProfile(): Promise<{ success: boolean; data?: any; message?: string }> {
+    try {
+      const response = await this.request('/api/doctor/profile', {
+        method: 'GET',
+      });
+
+      const result = await response.json();
+      console.log('Get Doctor Profile API Response:', result);
+
+      if (!response.ok) {
+        const error: any = new Error(result.message || 'حدث خطأ أثناء جلب الملف الشخصي');
+        error.status = response.status;
+        throw error;
+      }
+
+      return { success: true, data: result.data || result, message: result.message };
+    } catch (error) {
+      console.error('Get doctor profile error:', error);
+      throw error;
+    }
+  }
+
+  // Update Doctor Profile
+  async updateDoctorProfile(data: any): Promise<{ success: boolean; message?: string; data?: any }> {
+    try {
+      const response = await this.request('/api/doctor/profile', {
+        method: 'PUT',
+        body: JSON.stringify(data),
+      });
+
+      const result = await response.json();
+      console.log('Update Doctor Profile API Response:', result);
+
+      if (!response.ok) {
+        const error: any = new Error(result.message || 'حدث خطأ أثناء تحديث الملف الشخصي');
+        error.status = response.status;
+        error.errors = result.errors;
+        throw error;
+      }
+
+      return { success: true, message: result.message || 'تم تحديث الملف الشخصي بنجاح', data: result.data };
+    } catch (error) {
+      console.error('Update doctor profile error:', error);
       throw error;
     }
   }
