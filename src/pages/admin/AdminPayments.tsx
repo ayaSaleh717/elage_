@@ -9,7 +9,7 @@ const sidebarItems = [
   { icon: <Users className="w-4 h-4" />, label: "المستخدمون", path: "/admin/users" },
   { icon: <Stethoscope className="w-4 h-4" />, label: "الاستشارات", path: "/admin/consultations" },
   { icon: <UserPlus className="w-4 h-4" />, label: "طلبات الانضمام", path: "/admin/requests" },
-  { icon: <CreditCard className="w-4 h-4" />, label: "المدفوعات", path: "/admin/payments" },
+  // { icon: <CreditCard className="w-4 h-4" />, label: "المدفوعات", path: "/admin/payments" },
   { icon: <Settings className="w-4 h-4" />, label: "الإعدادات", path: "/admin/settings" },
 ];
 

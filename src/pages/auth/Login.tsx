@@ -244,7 +244,7 @@ const Login = () => {
           </div>
 
           {/* Quick Demo Access */}
-          <div className="grid grid-cols-3 gap-3">
+          {/* <div className="grid grid-cols-3 gap-3">
             <Link to="/admin">
               <Button variant="outline" size="sm" className="w-full rounded-xl h-11 text-xs border-border/40 hover:border-primary/30 hover:bg-primary/5 transition-all">
                 المسؤول
@@ -260,7 +260,7 @@ const Login = () => {
                 المريض
               </Button>
             </Link>
-          </div>
+          </div> */}
 
           {/* Register link */}
           <p className="text-center text-sm text-muted-foreground">

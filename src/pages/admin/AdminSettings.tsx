@@ -2,33 +2,63 @@ import DashboardLayout from "@/components/DashboardLayout";
 import { LayoutDashboard, Users, Stethoscope, CreditCard, Settings, UserPlus, MessageSquare, Bell, Shield, Globe, Palette, Database, Save, ToggleRight, ToggleLeft, Mail, Phone, MapPin, Building2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { apiService } from "@/services/api";
 
 const sidebarItems = [
   { icon: <LayoutDashboard className="w-4 h-4" />, label: "الإحصائيات", path: "/admin" },
   { icon: <Users className="w-4 h-4" />, label: "المستخدمون", path: "/admin/users" },
-  { icon: <Stethoscope className="w-4 h-4" />, label: "الاستشارات", path: "/admin/consultations" },
+  // { icon: <Stethoscope className="w-4 h-4" />, label: "الاستشارات", path: "/admin/consultations" },
   { icon: <UserPlus className="w-4 h-4" />, label: "طلبات الانضمام", path: "/admin/requests" },
-  { icon: <CreditCard className="w-4 h-4" />, label: "المدفوعات", path: "/admin/payments" },
+  // { icon: <CreditCard className="w-4 h-4" />, label: "المدفوعات", path: "/admin/payments" },
   { icon: <Settings className="w-4 h-4" />, label: "الإعدادات", path: "/admin/settings" },
 ];
 
 const AdminSettings = () => {
   const [settings, setSettings] = useState({
-    siteName: "إشفاء - منصة الاستشارات الطبية",
+    siteName: "iShifa",
     siteEmail: "info@ishifa.com",
     sitePhone: "+963 11 123 4567",
-    siteAddress: "دمشق، سوريا",
+    siteAddress: "اللاذقية، سوريا",
     notificationsEnabled: true,
     emailNotifications: true,
     smsNotifications: false,
     maintenanceMode: false,
     allowRegistration: true,
     doctorApprovalRequired: true,
-    consultationFee: 50000,
-    platformFee: 10,
-    currency: "ل.س",
   });
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
+
+  useEffect(() => {
+    const fetchSettings = async () => {
+      try {
+        const response = await apiService.getAdminSettings();
+        console.log('Admin settings response:', response);
+        if (response.success && response.data) {
+          const data = response.data;
+          setSettings({
+            siteName: data.site_name || "iShifa",
+            siteEmail: data.contact_email || "info@ishifa.com",
+            sitePhone: data.contact_phone || "+963 11 123 4567",
+            siteAddress: data.address || "اللاذقية، سوريا",
+            notificationsEnabled: data.enable_notifications === 1,
+            emailNotifications: data.email_notifications === 1,
+            smsNotifications: data.sms_notifications === 1,
+            maintenanceMode: data.maintenance_mode === 1,
+            allowRegistration: data.allow_registration === 1,
+            doctorApprovalRequired: data.doctor_approval_required === 1,
+          });
+        }
+      } catch (error) {
+        console.error("Failed to fetch settings:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchSettings();
+  }, []);
 
   const handleToggle = (key: string) => {
     setSettings(prev => ({ ...prev, [key]: !prev[key as keyof typeof prev] }));
@@ -38,60 +68,91 @@ const AdminSettings = () => {
     setSettings(prev => ({ ...prev, [key]: value }));
   };
 
-  const handleSave = () => {
-    console.log("Saving settings:", settings);
+  const handleSave = async () => {
+    setIsSaving(true);
+    try {
+      const settingsData = {
+        site_name: settings.siteName,
+        contact_email: settings.siteEmail,
+        contact_phone: settings.sitePhone,
+        address: settings.siteAddress,
+        enable_notifications: settings.notificationsEnabled ? 1 : 0,
+        email_notifications: settings.emailNotifications ? 1 : 0,
+        sms_notifications: settings.smsNotifications ? 1 : 0,
+        maintenance_mode: settings.maintenanceMode ? 1 : 0,
+        allow_registration: settings.allowRegistration ? 1 : 0,
+        doctor_approval_required: settings.doctorApprovalRequired ? 1 : 0,
+      };
+
+      const response = await apiService.updateAdminSettings(settingsData);
+      
+      if (response.success) {
+        alert('تم حفظ الإعدادات بنجاح');
+      }
+    } catch (error) {
+      console.error("Failed to save settings:", error);
+      alert('فشل حفظ الإعدادات');
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
     <DashboardLayout title="الإعدادات" items={sidebarItems} role="admin">
-      <div className="space-y-6">
-        {/* General Settings */}
-        <div className="bg-white dark:bg-slate-800 rounded-2xl p-4 sm:p-6 border border-slate-100 dark:border-slate-700 shadow-sm">
-          <div className="flex items-center gap-3 mb-6">
-            <div className="w-10 h-10 rounded-xl bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
-              <Globe className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-            </div>
-            <div>
-              <h3 className="font-bold text-foreground text-sm sm:text-base">الإعدادات العامة</h3>
-              <p className="text-xs text-muted-foreground">معلومات الموقع الأساسية</p>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <label className="text-xs font-medium text-foreground">اسم الموقع</label>
-              <Input
-                value={settings.siteName}
-                onChange={(e) => handleChange("siteName", e.target.value)}
-                className="rounded-xl border-slate-200 dark:border-slate-700 text-xs sm:text-sm"
-              />
-            </div>
-            <div className="space-y-2">
-              <label className="text-xs font-medium text-foreground">البريد الإلكتروني</label>
-              <Input
-                value={settings.siteEmail}
-                onChange={(e) => handleChange("siteEmail", e.target.value)}
-                className="rounded-xl border-slate-200 dark:border-slate-700 text-xs sm:text-sm"
-              />
-            </div>
-            <div className="space-y-2">
-              <label className="text-xs font-medium text-foreground">رقم الهاتف</label>
-              <Input
-                value={settings.sitePhone}
-                onChange={(e) => handleChange("sitePhone", e.target.value)}
-                className="rounded-xl border-slate-200 dark:border-slate-700 text-xs sm:text-sm"
-              />
-            </div>
-            <div className="space-y-2">
-              <label className="text-xs font-medium text-foreground">العنوان</label>
-              <Input
-                value={settings.siteAddress}
-                onChange={(e) => handleChange("siteAddress", e.target.value)}
-                className="rounded-xl border-slate-200 dark:border-slate-700 text-xs sm:text-sm"
-              />
-            </div>
-          </div>
+      {isLoading ? (
+        <div className="text-center py-12 bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-3"></div>
+          <p className="text-sm text-muted-foreground">جاري تحميل الإعدادات...</p>
         </div>
+      ) : (
+        <div className="space-y-6">
+          {/* General Settings */}
+          <div className="bg-white dark:bg-slate-800 rounded-2xl p-4 sm:p-6 border border-slate-100 dark:border-slate-700 shadow-sm">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-10 h-10 rounded-xl bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
+                <Globe className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+              </div>
+              <div>
+                <h3 className="font-bold text-foreground text-sm sm:text-base">الإعدادات العامة</h3>
+                <p className="text-xs text-muted-foreground">معلومات الموقع الأساسية</p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <label className="text-xs font-medium text-foreground">اسم الموقع</label>
+                <Input
+                  value={settings.siteName}
+                  onChange={(e) => handleChange("siteName", e.target.value)}
+                  className="rounded-xl border-slate-200 dark:border-slate-700 text-xs sm:text-sm"
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-xs font-medium text-foreground">البريد الإلكتروني</label>
+                <Input
+                  value={settings.siteEmail}
+                  onChange={(e) => handleChange("siteEmail", e.target.value)}
+                  className="rounded-xl border-slate-200 dark:border-slate-700 text-xs sm:text-sm"
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-xs font-medium text-foreground">رقم الهاتف</label>
+                <Input
+                  value={settings.sitePhone}
+                  onChange={(e) => handleChange("sitePhone", e.target.value)}
+                  className="rounded-xl border-slate-200 dark:border-slate-700 text-xs sm:text-sm"
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-xs font-medium text-foreground">العنوان</label>
+                <Input
+                  value={settings.siteAddress}
+                  onChange={(e) => handleChange("siteAddress", e.target.value)}
+                  className="rounded-xl border-slate-200 dark:border-slate-700 text-xs sm:text-sm"
+                />
+              </div>
+            </div>
+          </div>
 
         {/* Notification Settings */}
         <div className="bg-white dark:bg-slate-800 rounded-2xl p-4 sm:p-6 border border-slate-100 dark:border-slate-700 shadow-sm">
@@ -267,62 +328,28 @@ const AdminSettings = () => {
           </div>
         </div>
 
-        {/* Financial Settings */}
-        <div className="bg-white dark:bg-slate-800 rounded-2xl p-4 sm:p-6 border border-slate-100 dark:border-slate-700 shadow-sm">
-          <div className="flex items-center gap-3 mb-6">
-            <div className="w-10 h-10 rounded-xl bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center">
-              <CreditCard className="w-5 h-5 text-amber-600 dark:text-amber-400" />
-            </div>
-            <div>
-              <h3 className="font-bold text-foreground text-sm sm:text-base">الإعدادات المالية</h3>
-              <p className="text-xs text-muted-foreground">رسوم الاستشارات والعمولات</p>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="space-y-2">
-              <label className="text-xs font-medium text-foreground">رسوم الاستشارة</label>
-              <Input
-                type="number"
-                value={settings.consultationFee}
-                onChange={(e) => handleChange("consultationFee", parseInt(e.target.value))}
-                className="rounded-xl border-slate-200 dark:border-slate-700 text-xs sm:text-sm"
-              />
-              <p className="text-[10px] text-muted-foreground">السعر الافتراضي للاستشارة</p>
-            </div>
-            <div className="space-y-2">
-              <label className="text-xs font-medium text-foreground">عمولة المنصة (%)</label>
-              <Input
-                type="number"
-                value={settings.platformFee}
-                onChange={(e) => handleChange("platformFee", parseInt(e.target.value))}
-                className="rounded-xl border-slate-200 dark:border-slate-700 text-xs sm:text-sm"
-              />
-              <p className="text-[10px] text-muted-foreground">نسبة العمولة على كل استشارة</p>
-            </div>
-            <div className="space-y-2">
-              <label className="text-xs font-medium text-foreground">العملة</label>
-              <Input
-                value={settings.currency}
-                onChange={(e) => handleChange("currency", e.target.value)}
-                className="rounded-xl border-slate-200 dark:border-slate-700 text-xs sm:text-sm"
-              />
-              <p className="text-[10px] text-muted-foreground">العملة المستخدمة في المنصة</p>
-            </div>
-          </div>
-        </div>
-
         {/* Save Button */}
         <div className="flex justify-end">
           <Button
             onClick={handleSave}
+            disabled={isSaving}
             className="bg-primary hover:bg-primary/90 text-white rounded-xl h-11 sm:h-12 px-6 sm:px-8 text-sm sm:text-base gap-2"
           >
-            <Save className="w-4 h-4" />
-            حفظ التغييرات
+            {isSaving ? (
+              <div className="flex items-center gap-2">
+                <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                جاري الحفظ...
+              </div>
+            ) : (
+              <>
+                <Save className="w-4 h-4" />
+                حفظ التغييرات
+              </>
+            )}
           </Button>
         </div>
-      </div>
+        </div>
+      )}
     </DashboardLayout>
   );
 };

@@ -594,6 +594,199 @@ class ApiService {
     }
   }
 
+  // Get Admin Stats
+  async getAdminStats(): Promise<{ success: boolean; data?: any; message?: string }> {
+    try {
+      const response = await this.request('/api/admin/stats', {
+        method: 'GET',
+      });
+
+      const result = await response.json();
+      console.log('Get Admin Stats API Response:', result);
+
+      if (!response.ok) {
+        const error: any = new Error(result.message || 'حدث خطأ أثناء جلب الإحصائيات');
+        error.status = response.status;
+        throw error;
+      }
+
+      return { success: true, data: result.stats || result.data, message: result.message };
+    } catch (error) {
+      console.error('Get admin stats error:', error);
+      throw error;
+    }
+  }
+
+  // Get Admin Users
+  async getAdminUsers(): Promise<{ success: boolean; data?: any; message?: string }> {
+    try {
+      const response = await this.request('/api/admin/users', {
+        method: 'GET',
+      });
+
+      const result = await response.json();
+      console.log('Get Admin Users API Response:', result);
+
+      if (!response.ok) {
+        const error: any = new Error(result.message || 'حدث خطأ أثناء جلب المستخدمين');
+        error.status = response.status;
+        throw error;
+      }
+
+      // Extract users from the response - it's under 'users' key
+      return { success: true, data: result.users || result.data || [], message: result.message };
+    } catch (error) {
+      console.error('Get admin users error:', error);
+      throw error;
+    }
+  }
+
+  // Get Join Requests
+  async getJoinRequests(): Promise<{ success: boolean; data?: any; message?: string }> {
+    try {
+      const response = await this.request('/api/admin/join-requests', {
+        method: 'GET',
+      });
+
+      const result = await response.json();
+      console.log('Get Join Requests API Response:', result);
+
+      if (!response.ok) {
+        const error: any = new Error(result.message || 'حدث خطأ أثناء جلب طلبات الانضمام');
+        error.status = response.status;
+        throw error;
+      }
+
+      // Extract requests - try different possible keys
+      return { success: true, data: result.requests || result.data || result, message: result.message };
+    } catch (error) {
+      console.error('Get join requests error:', error);
+      throw error;
+    }
+  }
+
+  // Get Join Request Details
+  async getJoinRequestDetails(requestId: number): Promise<{ success: boolean; data?: any; message?: string }> {
+    try {
+      const response = await this.request(`/api/admin/join-requests/${requestId}`, {
+        method: 'GET',
+      });
+
+      const result = await response.json();
+      console.log('Get Join Request Details API Response:', result);
+
+      if (!response.ok) {
+        const error: any = new Error(result.message || 'حدث خطأ أثناء جلب تفاصيل الطلب');
+        error.status = response.status;
+        throw error;
+      }
+
+      return { success: true, data: result.request || result.data, message: result.message };
+    } catch (error) {
+      console.error('Get join request details error:', error);
+      throw error;
+    }
+  }
+
+  // Approve Join Request
+  async approveJoinRequest(requestId: number): Promise<{ success: boolean; message?: string; data?: any }> {
+    try {
+      console.log(`Approving join request ${requestId}`);
+      const response = await this.request(`/api/admin/join-requests/${requestId}/approve`, {
+        method: 'POST',
+      });
+
+      const result = await response.json();
+      console.log('Approve Join Request API Response:', result);
+
+      if (!response.ok) {
+        const error: any = new Error(result.message || 'حدث خطأ أثناء قبول الطلب');
+        error.status = response.status;
+        error.errors = result.errors;
+        throw error;
+      }
+
+      return { success: true, message: result.message || 'تم قبول الطلب بنجاح', data: result.data };
+    } catch (error) {
+      console.error('Approve join request error:', error);
+      throw error;
+    }
+  }
+
+  // Reject Join Request
+  async rejectJoinRequest(requestId: number): Promise<{ success: boolean; message?: string; data?: any }> {
+    try {
+      console.log(`Rejecting join request ${requestId}`);
+      const response = await this.request(`/api/admin/join-requests/${requestId}/reject`, {
+        method: 'POST',
+      });
+
+      const result = await response.json();
+      console.log('Reject Join Request API Response:', result);
+
+      if (!response.ok) {
+        const error: any = new Error(result.message || 'حدث خطأ أثناء رفض الطلب');
+        error.status = response.status;
+        error.errors = result.errors;
+        throw error;
+      }
+
+      return { success: true, message: result.message || 'تم رفض الطلب بنجاح', data: result.data };
+    } catch (error) {
+      console.error('Reject join request error:', error);
+      throw error;
+    }
+  }
+
+  // Get Admin Settings
+  async getAdminSettings(): Promise<{ success: boolean; data?: any; message?: string }> {
+    try {
+      const response = await this.request('/api/admin/settings', {
+        method: 'GET',
+      });
+
+      const result = await response.json();
+      console.log('Get Admin Settings API Response:', result);
+
+      if (!response.ok) {
+        const error: any = new Error(result.message || 'حدث خطأ أثناء جلب الإعدادات');
+        error.status = response.status;
+        throw error;
+      }
+
+      return { success: true, data: result.settings || result.data, message: result.message };
+    } catch (error) {
+      console.error('Get admin settings error:', error);
+      throw error;
+    }
+  }
+
+  // Update Admin Settings
+  async updateAdminSettings(settingsData: any): Promise<{ success: boolean; message?: string; data?: any }> {
+    try {
+      console.log('Updating admin settings:', settingsData);
+      const response = await this.request('/api/admin/settings', {
+        method: 'PUT',
+        body: JSON.stringify(settingsData),
+      });
+
+      const result = await response.json();
+      console.log('Update Admin Settings API Response:', result);
+
+      if (!response.ok) {
+        const error: any = new Error(result.message || 'حدث خطأ أثناء تحديث الإعدادات');
+        error.status = response.status;
+        error.errors = result.errors;
+        throw error;
+      }
+
+      return { success: true, message: result.message || 'تم تحديث الإعدادات بنجاح', data: result.data };
+    } catch (error) {
+      console.error('Update admin settings error:', error);
+      throw error;
+    }
+  }
+
   // Get Doctor Profile
   async getDoctorProfile(): Promise<{ success: boolean; data?: any; message?: string }> {
     try {

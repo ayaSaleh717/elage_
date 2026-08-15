@@ -2,14 +2,15 @@ import DashboardLayout from "@/components/DashboardLayout";
 import { LayoutDashboard, Users, Stethoscope, CreditCard, Settings, UserPlus, MessageSquare, Search, Filter, MoreVertical, Shield, Ban, Check, X, Mail, Phone, Calendar, MapPin } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { apiService } from "@/services/api";
 
 const sidebarItems = [
   { icon: <LayoutDashboard className="w-4 h-4" />, label: "الإحصائيات", path: "/admin" },
   { icon: <Users className="w-4 h-4" />, label: "المستخدمون", path: "/admin/users" },
   // { icon: <Stethoscope className="w-4 h-4" />, label: "الاستشارات", path: "/admin/consultations" },
   { icon: <UserPlus className="w-4 h-4" />, label: "طلبات الانضمام", path: "/admin/requests" },
-  { icon: <CreditCard className="w-4 h-4" />, label: "المدفوعات", path: "/admin/payments" },
+  // { icon: <CreditCard className="w-4 h-4" />, label: "المدفوعات", path: "/admin/payments" },
   { icon: <Settings className="w-4 h-4" />, label: "الإعدادات", path: "/admin/settings" },
 ];
 
@@ -17,104 +18,17 @@ interface User {
   id: number;
   name: string;
   email: string;
-  phone: string;
+  phone: string | null;
   role: "doctor" | "patient" | "admin";
   status: "active" | "suspended" | "pending";
-  joinDate: string;
-  location: string;
-  consultations: number;
+  joined_at: string;
+  latitude: string | null;
+  longitude: string | null;
+  specialization: string | null;
+  consultations_count: number | null;
 }
 
-const usersData: User[] = [
-  {
-    id: 1,
-    name: "د. محمد السعيد",
-    email: "dr.mohammed@email.com",
-    phone: "+963 944 567 890",
-    role: "doctor",
-    status: "active",
-    joinDate: "2025-01-15",
-    location: "دمشق",
-    consultations: 245,
-  },
-  {
-    id: 2,
-    name: "أمل الرشيد",
-    email: "amal.rashid@email.com",
-    phone: "+963 933 456 789",
-    role: "patient",
-    status: "active",
-    joinDate: "2025-02-20",
-    location: "حلب",
-    consultations: 12,
-  },
-  {
-    id: 3,
-    name: "د. سارة العلي",
-    email: "dr.sara@email.com",
-    phone: "+963 955 123 456",
-    role: "doctor",
-    status: "active",
-    joinDate: "2025-01-10",
-    location: "اللاذقية",
-    consultations: 312,
-  },
-  {
-    id: 4,
-    name: "يوسف أحمد",
-    email: "yousef.ahmed@email.com",
-    phone: "+963 988 321 098",
-    role: "patient",
-    status: "suspended",
-    joinDate: "2025-03-05",
-    location: "حمص",
-    consultations: 5,
-  },
-  {
-    id: 5,
-    name: "د. خالد الفهد",
-    email: "dr.khaled@email.com",
-    phone: "+963 944 654 321",
-    role: "doctor",
-    status: "pending",
-    joinDate: "2025-04-12",
-    location: "دمشق",
-    consultations: 0,
-  },
-  {
-    id: 6,
-    name: "نورة العلي",
-    email: "noura.alali@email.com",
-    phone: "+963 933 111 222",
-    role: "patient",
-    status: "active",
-    joinDate: "2025-02-28",
-    location: "حماة",
-    consultations: 28,
-  },
-  {
-    id: 7,
-    name: "المسؤول الرئيسي",
-    email: "admin@ishifa.com",
-    phone: "+963 955 333 444",
-    role: "admin",
-    status: "active",
-    joinDate: "2024-12-01",
-    location: "دمشق",
-    consultations: 0,
-  },
-  {
-    id: 8,
-    name: "فادي الحموي",
-    email: "fadi.hammami@email.com",
-    phone: "+963 988 555 666",
-    role: "patient",
-    status: "active",
-    joinDate: "2025-03-18",
-    location: "طرطوس",
-    consultations: 8,
-  },
-];
+
 
 const roleColors: Record<string, string> = {
   doctor: "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400",
@@ -132,13 +46,41 @@ const AdminUsers = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [filterRole, setFilterRole] = useState<string>("الكل");
   const [filterStatus, setFilterStatus] = useState<string>("الكل");
+  const [usersData, setUsersData] = useState<User[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const filteredUsers = usersData.filter((user) => {
-    const matchesSearch = user.name.includes(searchQuery) || user.email.includes(searchQuery) || user.phone.includes(searchQuery);
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const response = await apiService.getAdminUsers();
+        console.log('Admin users response:', response);
+        console.log('Response data type:', typeof response.data);
+        console.log('Response data:', response.data);
+        console.log('Is array?', Array.isArray(response.data));
+        
+        if (response.success && response.data) {
+          // Ensure data is an array
+          const users = Array.isArray(response.data) ? response.data : [];
+          console.log('Setting usersData with:', users);
+          setUsersData(users);
+        }
+      } catch (error) {
+        console.error("Failed to fetch users:", error);
+        setUsersData([]);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchUsers();
+  }, []);
+
+  const filteredUsers = Array.isArray(usersData) ? usersData.filter((user) => {
+    const matchesSearch = user.name.includes(searchQuery) || user.email.includes(searchQuery) || (user.phone && user.phone.includes(searchQuery));
     const matchesRole = filterRole === "الكل" || user.role === filterRole;
     const matchesStatus = filterStatus === "الكل" || user.status === filterStatus;
     return matchesSearch && matchesRole && matchesStatus;
-  });
+  }) : [];
 
   const roleLabels: Record<string, string> = {
     doctor: "طبيب",
@@ -161,28 +103,28 @@ const AdminUsers = () => {
             <Users className="w-4 h-4 text-blue-500" />
             <span className="text-[10px] sm:text-xs text-muted-foreground">إجمالي المستخدمين</span>
           </div>
-          <p className="text-lg sm:text-2xl font-bold text-foreground">{usersData.length}</p>
+          <p className="text-lg sm:text-2xl font-bold text-foreground">{isLoading ? "-" : usersData.length}</p>
         </div>
         <div className="bg-white dark:bg-slate-800 rounded-xl p-3 sm:p-4 border border-slate-100 dark:border-slate-700 shadow-sm">
           <div className="flex items-center gap-2 mb-1">
             <Stethoscope className="w-4 h-4 text-teal-500" />
             <span className="text-[10px] sm:text-xs text-muted-foreground">الأطباء</span>
           </div>
-          <p className="text-lg sm:text-2xl font-bold text-foreground">{usersData.filter(u => u.role === "doctor").length}</p>
+          <p className="text-lg sm:text-2xl font-bold text-foreground">{isLoading ? "-" : usersData.filter(u => u.role === "doctor").length}</p>
         </div>
         <div className="bg-white dark:bg-slate-800 rounded-xl p-3 sm:p-4 border border-slate-100 dark:border-slate-700 shadow-sm">
           <div className="flex items-center gap-2 mb-1">
             <Shield className="w-4 h-4 text-emerald-500" />
             <span className="text-[10px] sm:text-xs text-muted-foreground">نشطون</span>
           </div>
-          <p className="text-lg sm:text-2xl font-bold text-foreground">{usersData.filter(u => u.status === "active").length}</p>
+          <p className="text-lg sm:text-2xl font-bold text-foreground">{isLoading ? "-" : usersData.filter(u => u.status === "active").length}</p>
         </div>
         <div className="bg-white dark:bg-slate-800 rounded-xl p-3 sm:p-4 border border-slate-100 dark:border-slate-700 shadow-sm">
           <div className="flex items-center gap-2 mb-1">
             <Ban className="w-4 h-4 text-red-500" />
             <span className="text-[10px] sm:text-xs text-muted-foreground">معلقون</span>
           </div>
-          <p className="text-lg sm:text-2xl font-bold text-foreground">{usersData.filter(u => u.status === "suspended").length}</p>
+          <p className="text-lg sm:text-2xl font-bold text-foreground">{isLoading ? "-" : usersData.filter(u => u.status === "suspended").length}</p>
         </div>
       </div>
 
@@ -236,7 +178,12 @@ const AdminUsers = () => {
 
       {/* Users List */}
       <div className="space-y-3">
-        {filteredUsers.length === 0 ? (
+        {isLoading ? (
+          <div className="text-center py-12 bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-3"></div>
+            <p className="text-sm text-muted-foreground">جاري تحميل المستخدمين...</p>
+          </div>
+        ) : filteredUsers.length === 0 ? (
           <div className="text-center py-12 bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700">
             <Users className="w-12 h-12 text-muted-foreground/30 mx-auto mb-3" />
             <p className="text-sm text-muted-foreground">لا يوجد مستخدمين مطابقين للبحث</p>
@@ -271,16 +218,24 @@ const AdminUsers = () => {
                         <Mail className="w-3 h-3" />
                         {user.email}
                       </span>
-                      <span className="hidden sm:inline text-slate-300 dark:text-slate-600">•</span>
-                      <span className="flex items-center gap-1">
-                        <Phone className="w-3 h-3" />
-                        {user.phone}
-                      </span>
-                      <span className="hidden sm:inline text-slate-300 dark:text-slate-600">•</span>
-                      <span className="flex items-center gap-1">
-                        <MapPin className="w-3 h-3" />
-                        {user.location}
-                      </span>
+                      {user.phone && (
+                        <>
+                          <span className="hidden sm:inline text-slate-300 dark:text-slate-600">•</span>
+                          <span className="flex items-center gap-1">
+                            <Phone className="w-3 h-3" />
+                            {user.phone}
+                          </span>
+                        </>
+                      )}
+                      {user.latitude && user.longitude && (
+                        <>
+                          <span className="hidden sm:inline text-slate-300 dark:text-slate-600">•</span>
+                          <span className="flex items-center gap-1">
+                            <MapPin className="w-3 h-3" />
+                            {user.latitude}, {user.longitude}
+                          </span>
+                        </>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -293,7 +248,7 @@ const AdminUsers = () => {
                         <Stethoscope className="w-3 h-3" />
                         <span>الاستشارات</span>
                       </div>
-                      <p className="text-xs font-medium text-foreground">{user.consultations}</p>
+                      <p className="text-xs font-medium text-foreground">{user.consultations_count || 0}</p>
                     </div>
                   )}
                   <div className="hidden sm:block text-left">
@@ -301,7 +256,7 @@ const AdminUsers = () => {
                       <Calendar className="w-3 h-3" />
                       <span>تاريخ الانضمام</span>
                     </div>
-                    <p className="text-xs font-medium text-foreground">{user.joinDate}</p>
+                    <p className="text-xs font-medium text-foreground">{user.joined_at}</p>
                   </div>
                   <Button variant="outline" size="sm" className="rounded-lg h-8 w-8 p-0">
                     <MoreVertical className="w-4 h-4" />
