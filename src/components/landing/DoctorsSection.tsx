@@ -1,6 +1,6 @@
 import { Star, MapPin, Heart, Baby, Users, Stethoscope, Eye, Brain, Scissors, UserRound, CalendarCheck, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useEffect, useRef, useState } from "react";
 import { apiService, Doctor } from "@/services/api";
 
@@ -23,6 +23,15 @@ const DoctorsSection = () => {
   const [locationNames, setLocationNames] = useState<Record<number, string>>({});
   const [doctorAvailability, setDoctorAvailability] = useState<Record<number, boolean>>({});
   const sectionRef = useRef<HTMLDivElement>(null);
+  const navigate = useNavigate();
+
+  const handleProtectedRoute = (path: string) => {
+    if (!apiService.isAuthenticated()) {
+      navigate('/login');
+    } else {
+      navigate(path);
+    }
+  };
 
   const fetchLocationName = async (lat: number, lng: number, doctorId: number) => {
     try {
@@ -246,15 +255,14 @@ const DoctorsSection = () => {
                   </div>
 
                   {/* Book button */}
-                  <Link to={`/reservation?doctor=${doc.id}`} className="block">
-                    <Button
-                      className="w-full bg-gradient-primary text-primary-foreground hover:opacity-90 gap-2 transition-all hover:shadow-lg hover:shadow-primary/20"
-                      disabled={doctorAvailability[doc.id] === false}
-                    >
-                      <CalendarCheck className="w-4 h-4" />
-                      حجز موعد
-                    </Button>
-                  </Link>
+                  <Button
+                    className="w-full bg-gradient-primary text-primary-foreground hover:opacity-90 gap-2 transition-all hover:shadow-lg hover:shadow-primary/20"
+                    disabled={doctorAvailability[doc.id] === false}
+                    onClick={() => handleProtectedRoute(`/reservation?doctor=${doc.id}`)}
+                  >
+                    <CalendarCheck className="w-4 h-4" />
+                    حجز موعد
+                  </Button>
                 </div>
               </div>
             ))}

@@ -1,8 +1,9 @@
+import React from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import Homepage from "./pages/Homepage";
 import NotFound from "./pages/NotFound";
@@ -30,8 +31,20 @@ import Notifications from "./pages/Notifications";
 import Consultations from "./pages/patient/Consultations";
 import Records from "./pages/patient/Records";
 import Profile from "./pages/patient/Profile";
+import { apiService } from "./services/api";
 
 const queryClient = new QueryClient();
+
+// Protected Route Component
+const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
+  const isAuthenticated = apiService.isAuthenticated();
+  
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
+  
+  return <>{children}</>;
+};
 
 const App = () => (
   <ThemeProvider>
@@ -46,29 +59,29 @@ const App = () => (
             <Route path="/register" element={<Register />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/reset-password" element={<ResetPassword />} />
-            <Route path="/admin" element={<AdminDashboard />} />
-            <Route path="/admin/users" element={<AdminUsers />} />
-            <Route path="/admin/requests" element={<AdminRequests />} />
-            <Route path="/admin/payments" element={<AdminPayments />} />
-            <Route path="/admin/settings" element={<AdminSettings />} />
-            <Route path="/doctor" element={<DoctorDashboard />} />
-            <Route path="/doctor/patients" element={<DoctorPatients />} />
-            <Route path="/doctor/consultations" element={<DoctorConsultations />} />
-            <Route path="/doctor/schedule" element={<DoctorSchedule />} />
-            {/* <Route path="/doctor/messages" element={<DoctorMessages />} /> */}
-            {/* <Route path="/doctor/earnings" element={<DoctorEarnings />} /> */}
-            <Route path="/doctor/profile" element={<DoctorProfile />} />
-            <Route path="/patient" element={<PatientDashboard />}>
+            <Route path="/admin" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
+            <Route path="/admin/users" element={<ProtectedRoute><AdminUsers /></ProtectedRoute>} />
+            <Route path="/admin/requests" element={<ProtectedRoute><AdminRequests /></ProtectedRoute>} />
+            <Route path="/admin/payments" element={<ProtectedRoute><AdminPayments /></ProtectedRoute>} />
+            <Route path="/admin/settings" element={<ProtectedRoute><AdminSettings /></ProtectedRoute>} />
+            <Route path="/doctor" element={<ProtectedRoute><DoctorDashboard /></ProtectedRoute>} />
+            <Route path="/doctor/patients" element={<ProtectedRoute><DoctorPatients /></ProtectedRoute>} />
+            <Route path="/doctor/consultations" element={<ProtectedRoute><DoctorConsultations /></ProtectedRoute>} />
+            <Route path="/doctor/schedule" element={<ProtectedRoute><DoctorSchedule /></ProtectedRoute>} />
+            {/* <Route path="/doctor/messages" element={<ProtectedRoute><DoctorMessages /></ProtectedRoute>} /> */}
+            {/* <Route path="/doctor/earnings" element={<ProtectedRoute><DoctorEarnings /></ProtectedRoute>} /> */}
+            <Route path="/doctor/profile" element={<ProtectedRoute><DoctorProfile /></ProtectedRoute>} />
+            <Route path="/patient" element={<ProtectedRoute><PatientDashboard /></ProtectedRoute>}>
               <Route index element={<div>مرحباً في لوحة التحكم</div>} />
               <Route path="consultations" element={<Consultations />} />
               <Route path="records" element={<Records />} />
               <Route path="profile" element={<Profile />} />
               <Route path="ai-consultation" element={<AIConsultation />} />
             </Route>
-            <Route path="/doctors" element={<DoctorsPage />} />
+            <Route path="/doctors" element={<ProtectedRoute><DoctorsPage /></ProtectedRoute>} />
             <Route path="/reservation" element={<Reservation />} />
             <Route path="/ai-consultation" element={<AIConsultation />} />
-            <Route path="/notifications" element={<Notifications />} />
+            <Route path="/notifications" element={<ProtectedRoute><Notifications /></ProtectedRoute>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>

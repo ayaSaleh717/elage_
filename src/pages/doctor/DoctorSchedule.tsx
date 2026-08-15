@@ -94,7 +94,7 @@ const DoctorSchedule = () => {
     const newSlot = {
       id: Date.now(), // Temporary ID for new slots
       start: "09:00",
-      end: "12:00"
+      end: "09:00" // Set to same as start time initially
     };
     setSchedule(prev => prev.map((d, i) => {
       if (i === dayIndex) {
@@ -217,7 +217,17 @@ const DoctorSchedule = () => {
       }
     } catch (error: any) {
       console.error("Failed to save schedule:", error);
-      setSaveError(error.message || "فشل حفظ الجدول. يرجى المحاولة مرة أخرى.");
+      
+      // Translate common error messages
+      let errorMessage = error.message || "فشل حفظ الجدول. يرجى المحاولة مرة أخرى.";
+      
+      if (error.message === "This time slot overlaps with an existing one") {
+        errorMessage = "هذا الوقت يتداخل مع موعد موجود بالفعل. يرجى اختيار وقت مختلف.";
+      } else if (error.message === "This time slot is not available on this day") {
+        errorMessage = "هذا الوقت غير متاح في هذا اليوم. يرجى اختيار وقت مختلف.";
+      }
+      
+      setSaveError(errorMessage);
     } finally {
       setIsSaving(false);
     }

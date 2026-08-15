@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Bot, Star, ArrowLeft } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { apiService } from "@/services/api";
 
 const humanBody = "https://scwzacvwp7mrajkx.public.blob.vercel-storage.com/assests/humanbody.png";
 
@@ -9,6 +10,16 @@ interface HeroSectionProps {
 }
 
 const HeroSection = ({ userRole }: HeroSectionProps) => {
+  const navigate = useNavigate();
+
+  const handleProtectedRoute = (path: string) => {
+    if (!apiService.isAuthenticated()) {
+      navigate('/login');
+    } else {
+      navigate(path);
+    }
+  };
+
   return (
     <section className="relative min-h-screen  flex items-center pt-16 overflow-hidden">
       {/* Background gradient */}
@@ -73,19 +84,24 @@ const HeroSection = ({ userRole }: HeroSectionProps) => {
             </p>
 
             <div className="flex flex-wrap gap-4">
-              <Link to="/ai-consultation">
-                <Button size="lg" className="bg-gradient-primary text-primary-foreground hover:opacity-90 gap-2 text-base px-8 shadow-lg shadow-primary/20 transition-all hover:shadow-xl hover:shadow-primary/30 hover:-translate-y-0.5">
-                  <Bot className="w-5 h-5" />
-                  ابدأ استشارة ذكية
-                </Button>
-              </Link>
+              <Button 
+                size="lg" 
+                className="bg-gradient-primary text-primary-foreground hover:opacity-90 gap-2 text-base px-8 shadow-lg shadow-primary/20 transition-all hover:shadow-xl hover:shadow-primary/30 hover:-translate-y-0.5"
+                onClick={() => handleProtectedRoute('/ai-consultation')}
+              >
+                <Bot className="w-5 h-5" />
+                ابدأ استشارة ذكية
+              </Button>
               {userRole !== 'doctor' && (
-                <Link to="/doctors">
-                  <Button size="lg" variant="outline" className="gap-2 text-base px-8 backdrop-blur-sm transition-all hover:-translate-y-0.5">
-                    تصفح الأطباء
-                    <ArrowLeft className="w-4 h-4" />
-                  </Button>
-                </Link>
+                <Button 
+                  size="lg" 
+                  variant="outline" 
+                  className="gap-2 text-base px-8 backdrop-blur-sm transition-all hover:-translate-y-0.5"
+                  onClick={() => handleProtectedRoute('/doctors')}
+                >
+                  تصفح الأطباء
+                  <ArrowLeft className="w-4 h-4" />
+                </Button>
               )}
             </div>
 

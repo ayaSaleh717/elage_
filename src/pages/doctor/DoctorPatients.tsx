@@ -31,7 +31,7 @@ interface Patient {
   last_symptoms: string;
   last_diagnosis: string;
   last_prescription: string;
-  next_appointment: string | null;
+  next_appointment: string | null | { date: string; time: string };
   visit_history?: Array<{
     id: number;
     date: string;
@@ -172,7 +172,14 @@ const DoctorPatients = () => {
                   </div>
                   <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-900/50">
                     <p className="text-[10px] text-muted-foreground mb-1">الموعد القادم</p>
-                    <p className="text-sm font-bold text-primary">{selectedPatient.next_appointment || 'غير محدد'}</p>
+                    <p className="text-sm font-bold text-primary">
+                      {typeof selectedPatient.next_appointment === 'string' 
+                        ? (selectedPatient.next_appointment || 'غير محدد')
+                        : (selectedPatient.next_appointment?.date 
+                          ? `${selectedPatient.next_appointment.date} ${selectedPatient.next_appointment.time}`
+                          : 'غير محدد')
+                      }
+                    </p>
                   </div>
                 </div>
 
@@ -308,7 +315,14 @@ const DoctorPatients = () => {
                       <Calendar className="w-3 h-3" />
                       <span>الموعد القادم</span>
                     </div>
-                    <p className="text-xs font-medium text-primary">{patient.next_appointment || 'غير محدد'}</p>
+                    <p className="text-xs font-medium text-primary">
+                      {typeof patient.next_appointment === 'string' 
+                        ? (patient.next_appointment || 'غير محدد')
+                        : (patient.next_appointment?.date 
+                          ? `${patient.next_appointment.date} ${patient.next_appointment.time}`
+                          : 'غير محدد')
+                      }
+                    </p>
                   </div>
                   <ChevronLeft className="w-4 h-4 text-muted-foreground group-hover:text-primary group-hover:-translate-x-1 transition-all" />
                 </div>

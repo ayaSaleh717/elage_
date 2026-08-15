@@ -374,11 +374,10 @@ class ApiService {
         const error: any = new Error(result.message || 'حدث خطأ');
         error.status = response.status;
 
-        // Handle 401 Unauthorized - clear token and redirect
+        // Handle 401 Unauthorized - clear token but don't redirect automatically
         if (response.status === 401) {
           localStorage.removeItem('authToken');
           localStorage.removeItem('userData');
-          window.location.href = '/login';
         }
 
         throw error;
@@ -566,6 +565,31 @@ class ApiService {
       return { success: true, data: result.data || result, message: result.message };
     } catch (error) {
       console.error('Get patient consultations error:', error);
+      throw error;
+    }
+  }
+
+  // Cancel Appointment
+  async cancelAppointment(appointmentId: number): Promise<{ success: boolean; message?: string; data?: any }> {
+    try {
+      console.log(`Cancelling appointment ${appointmentId}`);
+      const response = await this.request(`/api/patient/appointments/${appointmentId}/cancel`, {
+        method: 'PUT',
+      });
+
+      const result = await response.json();
+      console.log('Cancel Appointment API Response:', result);
+
+      if (!response.ok) {
+        const error: any = new Error(result.message || 'حدث خطأ أثناء إلغاء الموعد');
+        error.status = response.status;
+        error.errors = result.errors;
+        throw error;
+      }
+
+      return { success: true, message: result.message || 'تم إلغاء الموعد بنجاح', data: result.data };
+    } catch (error) {
+      console.error('Cancel appointment error:', error);
       throw error;
     }
   }

@@ -61,6 +61,7 @@ const Reservation = () => {
   const [isLoadingSchedule, setIsLoadingSchedule] = useState(false);
   const [selectedDate, setSelectedDate] = useState("");
   const [selectedTime, setSelectedTime] = useState("");
+  const [selectedSlot, setSelectedSlot] = useState<{id: number, start_time: string, end_time: string, is_available: boolean} | null>(null);
   const [patientName, setPatientName] = useState("");
   const [patientPhone, setPatientPhone] = useState("");
   const [notes, setNotes] = useState("");
@@ -162,12 +163,7 @@ const Reservation = () => {
     }
   }, [doctorId]);
 
-  const calculateEndTime = (startTime: string): string => {
-    const [hours, minutes] = startTime.split(":").map(Number);
-    const date = new Date();
-    date.setHours(hours, minutes + 30);
-    return date.toTimeString().slice(0, 5);
-  };
+
 
   const getAvailableSlots = (date: string): Array<{id: number, start_time: string, end_time: string, is_available: boolean}> => {
     if (!Array.isArray(schedule)) return [];
@@ -224,7 +220,7 @@ const Reservation = () => {
     e.preventDefault();
     setError("");
 
-    if (!doctorId || !selectedDate || !selectedTime) {
+    if (!doctorId || !selectedDate || !selectedTime || !selectedSlot) {
       setError("الرجاء اختيار الطبيب والتاريخ والوقت");
       return;
     }
@@ -232,12 +228,11 @@ const Reservation = () => {
     setIsLoading(true);
 
     try {
-      const endTime = calculateEndTime(selectedTime);
       const response = await apiService.bookAppointment({
         doctor_id: Number(doctorId),
         date: selectedDate,
         start_time: selectedTime,
-        end_time: endTime,
+        end_time: selectedSlot.end_time,
       });
 
       if (response.success) {
@@ -387,6 +382,7 @@ const Reservation = () => {
                             if (day.is_open === 1) {
                               setSelectedDate(day.date);
                               setSelectedTime("");
+                              setSelectedSlot(null);
                             }
                           }}
                           disabled={day.is_open === 0}
@@ -422,7 +418,12 @@ const Reservation = () => {
                         <button
                           key={slot.id}
                           type="button"
-                          onClick={() => slot.is_available && setSelectedTime(slot.start_time)}
+                          onClick={() => {
+                            if (slot.is_available) {
+                              setSelectedTime(slot.start_time);
+                              setSelectedSlot(slot);
+                            }
+                          }}
                           disabled={!slot.is_available}
                           className={`py-3 px-4 rounded-xl text-sm font-medium transition-all ${
                             selectedTime === slot.start_time

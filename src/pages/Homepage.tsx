@@ -10,11 +10,13 @@ import { apiService } from "@/services/api";
 
 const Homepage = () => {
   const [userRole, setUserRole] = useState<string | null>(null);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   useEffect(() => {
     const currentUser = apiService.getCurrentUser();
     if (currentUser) {
       setUserRole(currentUser.role);
+      setIsAuthenticated(true);
     }
   }, []);
 
@@ -25,7 +27,7 @@ const Homepage = () => {
       <NewsSection />
       <FeaturesSection />
       <HowItWorks />
-      {userRole !== 'doctor' && <DoctorsSection />}
+      {isAuthenticated && userRole !== 'doctor' && <DoctorsSection />}
       <Footer />
     </div>
   );
