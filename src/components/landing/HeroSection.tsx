@@ -4,7 +4,11 @@ import { Link } from "react-router-dom";
 
 const humanBody = "https://scwzacvwp7mrajkx.public.blob.vercel-storage.com/assests/humanbody.png";
 
-const HeroSection = () => {
+interface HeroSectionProps {
+  userRole: string | null;
+}
+
+const HeroSection = ({ userRole }: HeroSectionProps) => {
   return (
     <section className="relative min-h-screen  flex items-center pt-16 overflow-hidden">
       {/* Background gradient */}
@@ -75,12 +79,14 @@ const HeroSection = () => {
                   ابدأ استشارة ذكية
                 </Button>
               </Link>
-              <Link to="/doctors">
-                <Button size="lg" variant="outline" className="gap-2 text-base px-8 backdrop-blur-sm transition-all hover:-translate-y-0.5">
-                  تصفح الأطباء
-                  <ArrowLeft className="w-4 h-4" />
-                </Button>
-              </Link>
+              {userRole !== 'doctor' && (
+                <Link to="/doctors">
+                  <Button size="lg" variant="outline" className="gap-2 text-base px-8 backdrop-blur-sm transition-all hover:-translate-y-0.5">
+                    تصفح الأطباء
+                    <ArrowLeft className="w-4 h-4" />
+                  </Button>
+                </Link>
+              )}
             </div>
 
             <div className="flex items-center gap-8 pt-4">

@@ -11,7 +11,7 @@ const sidebarItems = [
   { icon: <Stethoscope className="w-4 h-4" />, label: "الاستشارات", path: "/doctor/consultations" },
   { icon: <Clock className="w-4 h-4" />, label: "أوقات العمل", path: "/doctor/schedule" },
   // { icon: <MessageSquare className="w-4 h-4" />, label: "الرسائل", path: "/doctor/messages" },
-  { icon: <DollarSign className="w-4 h-4" />, label: "الأرباح", path: "/doctor/earnings" },
+  // { icon: <DollarSign className="w-4 h-4" />, label: "الأرباح", path: "/doctor/earnings" },
   { icon: <User className="w-4 h-4" />, label: "الملف الشخصي", path: "/doctor/profile" },
 ];
 
@@ -24,6 +24,8 @@ const DoctorProfile = () => {
   const [latitude, setLatitude] = useState<number | null>(null);
   const [longitude, setLongitude] = useState<number | null>(null);
   const [isGettingLocation, setIsGettingLocation] = useState(false);
+  const [specializations, setSpecializations] = useState<string[]>([]);
+  const [isLoadingSpecializations, setIsLoadingSpecializations] = useState(false);
   const [profile, setProfile] = useState({
     firstName: "",
     lastName: "",
@@ -70,6 +72,52 @@ const DoctorProfile = () => {
             followUpFee: "",
             appointmentsCount: profileData.appointments_count || 0,
           });
+
+          // Set latitude and longitude from database if available
+          if (profileData.latitude && profileData.longitude) {
+            const lat = typeof profileData.latitude === 'string' ? parseFloat(profileData.latitude) : profileData.latitude;
+            const lng = typeof profileData.longitude === 'string' ? parseFloat(profileData.longitude) : profileData.longitude;
+
+            setLatitude(lat);
+            setLongitude(lng);
+
+            // Perform reverse geocoding to get address from stored coordinates
+            try {
+              const response = await fetch(
+                `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&accept-language=ar`
+              );
+              const data = await response.json();
+
+              if (data && data.address) {
+                const address = data.address;
+                const city = address.city || address.town || address.village || address.county || "";
+                const country = address.country || "";
+                const street = address.road || address.street || "";
+
+                // Show only country, city, and street
+                const locationText = [street, city, country].filter(Boolean).join(", ");
+                setProfile(prev => ({
+                  ...prev,
+                  location: locationText
+                }));
+              }
+            } catch (geocodingError) {
+              console.error("Geocoding error:", geocodingError);
+              // Fallback to coordinates if geocoding fails
+              setProfile(prev => ({
+                ...prev,
+                location: `${lat.toFixed(6)}, ${lng.toFixed(6)}`
+              }));
+            }
+          } else if (profileData.latitude) {
+            // Handle case where only latitude is available
+            const lat = typeof profileData.latitude === 'string' ? parseFloat(profileData.latitude) : profileData.latitude;
+            setLatitude(lat);
+            setProfile(prev => ({
+              ...prev,
+              location: `${lat.toFixed(6)}`
+            }));
+          }
         }
       } catch (error) {
         console.error("Failed to fetch doctor profile:", error);
@@ -79,6 +127,24 @@ const DoctorProfile = () => {
     };
 
     fetchProfile();
+  }, []);
+
+  useEffect(() => {
+    const fetchSpecializations = async () => {
+      setIsLoadingSpecializations(true);
+      try {
+        const response = await apiService.getSpecializations();
+        if (response.success && response.data) {
+          setSpecializations(response.data);
+        }
+      } catch (error) {
+        console.error("Failed to fetch specializations:", error);
+      } finally {
+        setIsLoadingSpecializations(false);
+      }
+    };
+
+    fetchSpecializations();
   }, []);
 
   const handleChange = (field: string, value: string) => {
@@ -114,6 +180,7 @@ const DoctorProfile = () => {
             const country = address.country || "";
             const street = address.road || address.street || "";
 
+            // Show only country, city, and street
             const locationText = [street, city, country].filter(Boolean).join(", ");
             setProfile(prev => ({
               ...prev,
@@ -163,6 +230,8 @@ const DoctorProfile = () => {
         degree: profile.degree,
         university: profile.university,
         bio: profile.bio,
+        latitude: latitude !== null ? latitude.toString() : undefined,
+        longitude: longitude !== null ? longitude.toString() : undefined,
       });
 
       if (response.success) {
@@ -383,7 +452,17 @@ const DoctorProfile = () => {
               <div>
                 <label className="text-[10px] sm:text-xs text-muted-foreground mb-1 block">التخصص الرئيسي</label>
                 {isEditing ? (
-                  <Input value={profile.specialty} onChange={(e) => handleChange("specialty", e.target.value)} className="h-9 sm:h-10 rounded-lg text-xs sm:text-sm" />
+                  <select
+                    value={profile.specialty}
+                    onChange={(e) => handleChange("specialty", e.target.value)}
+                    className="h-9 sm:h-10 rounded-lg text-xs sm:text-sm bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-3 py-2 w-full"
+                    disabled={isLoadingSpecializations}
+                  >
+                    <option value="">اختر التخصص</option>
+                    {specializations.map((spec) => (
+                      <option key={spec} value={spec}>{spec}</option>
+                    ))}
+                  </select>
                 ) : (
                   <p className="text-xs sm:text-sm font-medium text-foreground p-2 bg-primary/5 dark:bg-primary/10 rounded-lg border border-primary/20">{profile.specialty}</p>
                 )}

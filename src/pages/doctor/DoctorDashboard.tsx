@@ -1,7 +1,8 @@
 import DashboardLayout from "@/components/DashboardLayout";
-import { LayoutDashboard, Users, Stethoscope, Clock, MessageSquare, DollarSign, User, TrendingUp, Calendar, Activity } from "lucide-react";
+import { LayoutDashboard, Users, Stethoscope, Clock, MessageSquare, DollarSign, User, TrendingUp, Calendar, Activity, AlertCircle } from "lucide-react";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, BarChart, Bar, XAxis, YAxis, CartesianGrid } from "recharts";
 import { useState, useEffect } from "react";
+import { apiService } from "@/services/api";
 
 const sidebarItems = [
   { icon: <LayoutDashboard className="w-4 h-4" />, label: "الإحصائيات", path: "/doctor" },
@@ -9,79 +10,138 @@ const sidebarItems = [
   { icon: <Stethoscope className="w-4 h-4" />, label: "الاستشارات", path: "/doctor/consultations" },
   { icon: <Clock className="w-4 h-4" />, label: "أوقات العمل", path: "/doctor/schedule" },
   // { icon: <MessageSquare className="w-4 h-4" />, label: "الرسائل", path: "/doctor/messages" },
-  { icon: <DollarSign className="w-4 h-4" />, label: "الأرباح", path: "/doctor/earnings" },
+  // { icon: <DollarSign className="w-4 h-4" />, label: "الأرباح", path: "/doctor/earnings" },
   { icon: <User className="w-4 h-4" />, label: "الملف الشخصي", path: "/doctor/profile" },
 ];
 
-// Donut chart data - consultation types
-const consultationTypeData = [
-  { name: "دردشة", value: 60, color: "#14b8a6" },
-  { name: "زيارة", value: 30, color: "#f59e0b" },
-  { name: "طوارئ", value: 10, color: "#ef4444" },
-];
 
-// Bar chart data - weekly consultations
-const weeklyData = [
-  { day: "السبت", consultations: 12 },
-  { day: "الأحد", consultations: 8 },
-  { day: "الاثنين", consultations: 15 },
-  { day: "الثلاثاء", consultations: 10 },
-  { day: "الأربعاء", consultations: 18 },
-  { day: "الخميس", consultations: 6 },
-  { day: "الجمعة", consultations: 3 },
-];
 
-// Stats data
-const statsData = [
-  { icon: Users, label: "إجمالي المرضى", value: "342", change: "+18 جديد", color: "from-blue-500 to-sky-400", bgColor: "bg-blue-50 dark:bg-blue-900/20" },
-  { icon: Stethoscope, label: "استشارات اليوم", value: "8", change: "+3 عن أمس", color: "from-teal-500 to-emerald-400", bgColor: "bg-teal-50 dark:bg-teal-900/20" },
-  { icon: MessageSquare, label: "رسائل جديدة", value: "12", change: "5 غير مقروءة", color: "from-violet-500 to-purple-400", bgColor: "bg-violet-50 dark:bg-violet-900/20" },
-  { icon: DollarSign, label: "أرباح الشهر", value: "850,000 ل.س", change: "+22% نمو", color: "from-amber-500 to-orange-400", bgColor: "bg-amber-50 dark:bg-amber-900/20" },
-];
+
+
+
 
 const DoctorDashboard = () => {
   const [animatedStats, setAnimatedStats] = useState(false);
   const [chartVisible, setChartVisible] = useState(false);
+  const [dashboardData, setDashboardData] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState("");
 
   useEffect(() => {
     const timer1 = setTimeout(() => setAnimatedStats(true), 100);
     const timer2 = setTimeout(() => setChartVisible(true), 400);
+    
+    const fetchDashboardData = async () => {
+      try {
+        const response = await apiService.getDoctorDashboard();
+        if (response.success && response.data) {
+          setDashboardData(response.data);
+        } else {
+          setDashboardData(null);
+        }
+      } catch (err: any) {
+        setError(err.message || "فشل تحميل الإحصائيات");
+        console.error("Failed to fetch dashboard data:", err);
+        setDashboardData(null);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchDashboardData();
+
     return () => {
       clearTimeout(timer1);
       clearTimeout(timer2);
     };
   }, []);
 
+  // Transform API data to chart format
+  const weeklyData = dashboardData?.weekly_consultations ? 
+    dashboardData.weekly_consultations.labels.map((label: string, index: number) => ({
+      day: label === 'Sat' ? 'السبت' : 
+           label === 'Sun' ? 'الأحد' : 
+           label === 'Mon' ? 'الاثنين' : 
+           label === 'Tue' ? 'الثلاثاء' : 
+           label === 'Wed' ? 'الأربعاء' : 
+           label === 'Thu' ? 'الخميس' : 'الجمعة',
+      consultations: dashboardData.weekly_consultations.values[index]
+    })) : [];
+
+  // Transform API data to stats format
+  const statsData = dashboardData ? [
+    { 
+      icon: Users, 
+      label: "إجمالي المرضى", 
+      value: dashboardData.total_patients?.toString() || "0", 
+      change: `+${dashboardData.new_patients_this_week || 0} جديد`, 
+      color: "from-blue-500 to-sky-400", 
+      bgColor: "bg-blue-50 dark:bg-blue-900/20" 
+    },
+    { 
+      icon: Stethoscope, 
+      label: "استشارات اليوم", 
+      value: dashboardData.consultations_today?.toString() || "0", 
+      change: dashboardData.consultations_today_change >= 0 ? 
+        `+${dashboardData.consultations_today_change} عن أمس` : 
+        `${dashboardData.consultations_today_change} عن أمس`, 
+      color: "from-teal-500 to-emerald-400", 
+      bgColor: "bg-teal-50 dark:bg-teal-900/20" 
+    },
+  ] : [];
+
   return (
     <DashboardLayout title="لوحة تحكم الطبيب" items={sidebarItems} role="doctor">
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 sm:gap-5 mb-6 sm:mb-8">
-        {statsData.map((stat, i) => {
-          const Icon = stat.icon;
-          return (
-            <div
-              key={i}
-              className={`relative overflow-hidden bg-white dark:bg-slate-800 rounded-2xl p-4 sm:p-5 border border-slate-100 dark:border-slate-700 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-500 group ${
-                animatedStats ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
-              }`}
-              style={{ transitionDelay: `${i * 100}ms` }}
-            >
-              <div className="flex items-start justify-between mb-3">
-                <div className={`w-11 h-11 rounded-xl ${stat.bgColor} flex items-center justify-center group-hover:scale-110 transition-transform duration-300`}>
-                  <Icon className="w-5 h-5 text-primary" />
-                </div>
-                <span className="text-[10px] sm:text-xs text-emerald-600 dark:text-emerald-400 font-medium bg-emerald-50 dark:bg-emerald-900/20 px-2 py-0.5 rounded-full">
-                  {stat.change}
-                </span>
-              </div>
-              <p className="text-2xl sm:text-3xl font-bold text-foreground mb-1">{stat.value}</p>
-              <p className="text-xs text-muted-foreground">{stat.label}</p>
-              {/* Decorative gradient */}
-              <div className={`absolute -bottom-4 -left-4 w-20 h-20 rounded-full bg-gradient-to-br ${stat.color} opacity-5 group-hover:opacity-10 transition-opacity`} />
+      {isLoading ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 sm:gap-5 mb-6 sm:mb-8">
+          {[1, 2, 3, 4].map((i) => (
+            <div key={i} className="bg-white dark:bg-slate-800 rounded-2xl p-4 sm:p-5 border border-slate-100 dark:border-slate-700 shadow-sm animate-pulse">
+              <div className="h-6 bg-muted rounded w-1/2 mb-3" />
+              <div className="h-8 bg-muted rounded w-3/4 mb-2" />
+              <div className="h-4 bg-muted rounded w-1/3" />
             </div>
-          );
-        })}
-      </div>
+          ))}
+        </div>
+      ) : error ? (
+        <div className="bg-white dark:bg-slate-800 rounded-2xl p-6 border border-slate-100 dark:border-slate-700 shadow-sm mb-6 sm:mb-8">
+          <div className="flex items-center gap-3">
+            <AlertCircle className="w-8 h-8 text-red-500" />
+            <p className="text-sm text-muted-foreground">{error}</p>
+          </div>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 sm:gap-5 mb-6 sm:mb-8">
+          {statsData.map((stat, i) => {
+            const Icon = stat.icon;
+            return (
+              <div
+                key={i}
+                className={`relative overflow-hidden bg-white dark:bg-slate-800 rounded-2xl p-4 sm:p-5 border border-slate-100 dark:border-slate-700 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-500 group ${
+                  animatedStats ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
+                }`}
+                style={{ transitionDelay: `${i * 100}ms` }}
+              >
+                <div className="flex items-start justify-between mb-3">
+                  <div className={`w-11 h-11 rounded-xl ${stat.bgColor} flex items-center justify-center group-hover:scale-110 transition-transform duration-300`}>
+                    <Icon className="w-5 h-5 text-primary" />
+                  </div>
+                  <span className={`text-[10px] sm:text-xs font-medium px-2 py-0.5 rounded-full ${
+                    stat.change.includes('+') ? 'text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/20' : 
+                    'text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20'
+                  }`}>
+                    {stat.change}
+                  </span>
+                </div>
+                <p className="text-2xl sm:text-3xl font-bold text-foreground mb-1">{stat.value}</p>
+                <p className="text-xs text-muted-foreground">{stat.label}</p>
+                {/* Decorative gradient */}
+                <div className={`absolute -bottom-4 -left-4 w-20 h-20 rounded-full bg-gradient-to-br ${stat.color} opacity-5 group-hover:opacity-10 transition-opacity`} />
+              </div>
+            );
+          })}
+        </div>
+      )}
 
       {/* Charts Section */}
       <div className="grid grid-cols-1 lg:grid-cols-1 gap-4 sm:gap-6 mb-6 sm:mb-8">
@@ -161,7 +221,15 @@ const DoctorDashboard = () => {
           
           <div className="h-[200px] sm:h-[250px]">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={weeklyData} margin={{ top: 5, right: 5, left: -20, bottom: 5 }}>
+              <BarChart data={weeklyData.length > 0 ? weeklyData : [
+                { day: "السبت", consultations: 0 },
+                { day: "الأحد", consultations: 0 },
+                { day: "الاثنين", consultations: 0 },
+                { day: "الثلاثاء", consultations: 0 },
+                { day: "الأربعاء", consultations: 0 },
+                { day: "الخميس", consultations: 0 },
+                { day: "الجمعة", consultations: 0 },
+              ]} margin={{ top: 5, right: 5, left: -20, bottom: 5 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" opacity={0.3} />
                 <XAxis 
                   dataKey="day" 
@@ -219,31 +287,30 @@ const DoctorDashboard = () => {
             <span className="text-[10px] text-muted-foreground bg-slate-100 dark:bg-slate-700 px-2 py-1 rounded-full">اليوم</span>
           </div>
           <div className="space-y-2 sm:space-y-3">
-            {[
-              { patient: "محمد سعيد", time: "10:00 ص", typeColor: "bg-teal-100 dark:bg-teal-900/30 text-teal-700 dark:text-teal-400" },
-              { patient: "أمل الرشيد", time: "11:30 ص", typeColor: "bg-teal-100 dark:bg-teal-900/30 text-teal-700 dark:text-teal-400" },
-              { patient: "يوسف أحمد", time: "2:00 م",  typeColor: "bg-teal-100 dark:bg-teal-900/30 text-teal-700 dark:text-teal-400" },
-              { patient: "سارة خالد", time: "3:30 م",  typeColor: "bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400" },
-            ].map((apt, i) => (
-              <div 
-                key={i} 
-                className="flex items-center justify-between p-3 rounded-xl bg-slate-50 dark:bg-slate-900/50 hover:bg-slate-100 dark:hover:bg-slate-900 transition-colors group"
-                style={{ animationDelay: `${i * 100}ms` }}
-              >
-                <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-br from-primary/10 to-teal-50 dark:from-primary/20 dark:to-teal-900/30 flex items-center justify-center group-hover:scale-105 transition-transform">
-                    <span className="text-xs sm:text-sm font-bold text-primary">{apt.patient.charAt(0)}</span>
-                  </div>
-                  <div>
-                    <p className="text-xs sm:text-sm font-medium text-foreground">{apt.patient}</p>
-                    <p className="text-[10px] sm:text-xs text-muted-foreground">{apt.time}</p>
+            {dashboardData?.upcoming_consultations && dashboardData.upcoming_consultations.length > 0 ? (
+              dashboardData.upcoming_consultations.map((apt: any, i: number) => (
+                <div 
+                  key={i} 
+                  className="flex items-center justify-between p-3 rounded-xl bg-slate-50 dark:bg-slate-900/50 hover:bg-slate-100 dark:hover:bg-slate-900 transition-colors group"
+                  style={{ animationDelay: `${i * 100}ms` }}
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-br from-primary/10 to-teal-50 dark:from-primary/20 dark:to-teal-900/30 flex items-center justify-center group-hover:scale-105 transition-transform">
+                      <span className="text-xs sm:text-sm font-bold text-primary">{apt.patient_first_name?.charAt(0) || 'P'}</span>
+                    </div>
+                    <div>
+                      <p className="text-xs sm:text-sm font-medium text-foreground">{apt.patient_first_name} {apt.patient_last_name}</p>
+                      <p className="text-[10px] sm:text-xs text-muted-foreground">{apt.start_time}</p>
+                    </div>
                   </div>
                 </div>
-                {/* <span className={`text-[10px] sm:text-xs px-2 sm:px-3 py-1 rounded-full font-medium ${apt.typeColor}`}>
-                  {apt.type}
-                </span> */}
+              ))
+            ) : (
+              <div className="text-center py-8">
+                <Calendar className="w-12 h-12 text-muted-foreground/30 mx-auto mb-3" />
+                <p className="text-sm text-muted-foreground">لا توجد استشارات قادمة</p>
               </div>
-            ))}
+            )}
           </div>
         </div>
 

@@ -1,7 +1,8 @@
 import DashboardLayout from "@/components/DashboardLayout";
 import { LayoutDashboard, Users, Stethoscope, Clock, MessageSquare, DollarSign, User, Plus, Trash2, Save } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { apiService } from "@/services/api";
 
 const sidebarItems = [
   { icon: <LayoutDashboard className="w-4 h-4" />, label: "الإحصائيات", path: "/doctor" },
@@ -9,7 +10,7 @@ const sidebarItems = [
   { icon: <Stethoscope className="w-4 h-4" />, label: "الاستشارات", path: "/doctor/consultations" },
   { icon: <Clock className="w-4 h-4" />, label: "أوقات العمل", path: "/doctor/schedule" },
   // { icon: <MessageSquare className="w-4 h-4" />, label: "الرسائل", path: "/doctor/messages" },
-  { icon: <DollarSign className="w-4 h-4" />, label: "الأرباح", path: "/doctor/earnings" },
+  // { icon: <DollarSign className="w-4 h-4" />, label: "الأرباح", path: "/doctor/earnings" },
   { icon: <User className="w-4 h-4" />, label: "الملف الشخصي", path: "/doctor/profile" },
 ];
 
@@ -21,23 +22,68 @@ interface TimeSlot {
 
 interface DaySchedule {
   day: string;
+  dayOfWeek: number; // 0-6 for Saturday-Friday (matching API)
+  id?: number; // Database ID for the working day
   enabled: boolean;
   slots: TimeSlot[];
 }
 
 const initialSchedule: DaySchedule[] = [
-  { day: "السبت", enabled: true, slots: [{ id: 1, start: "08:00", end: "12:00" }, { id: 2, start: "14:00", end: "17:00" }] },
-  { day: "الأحد", enabled: true, slots: [{ id: 1, start: "08:00", end: "12:00" }, { id: 2, start: "14:00", end: "17:00" }] },
-  { day: "الاثنين", enabled: true, slots: [{ id: 1, start: "09:00", end: "13:00" }, { id: 2, start: "15:00", end: "18:00" }] },
-  { day: "الثلاثاء", enabled: true, slots: [{ id: 1, start: "08:00", end: "12:00" }] },
-  { day: "الأربعاء", enabled: true, slots: [{ id: 1, start: "10:00", end: "14:00" }, { id: 2, start: "16:00", end: "19:00" }] },
-  { day: "الخميس", enabled: true, slots: [{ id: 1, start: "08:00", end: "11:00" }] },
-  { day: "الجمعة", enabled: false, slots: [] },
+  { day: "السبت", dayOfWeek: 0, enabled: true, slots: [] },
+  { day: "الأحد", dayOfWeek: 1, enabled: true, slots: [] },
+  { day: "الاثنين", dayOfWeek: 2, enabled: true, slots: [] },
+  { day: "الثلاثاء", dayOfWeek: 3, enabled: true, slots: [] },
+  { day: "الأربعاء", dayOfWeek: 4, enabled: true, slots: [] },
+  { day: "الخميس", dayOfWeek: 5, enabled: true, slots: [] },
+  { day: "الجمعة", dayOfWeek: 6, enabled: false, slots: [] },
 ];
 
 const DoctorSchedule = () => {
   const [schedule, setSchedule] = useState<DaySchedule[]>(initialSchedule);
+  const [originalSchedule, setOriginalSchedule] = useState<DaySchedule[]>(initialSchedule);
   const [saved, setSaved] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchScheduleData = async () => {
+      try {
+        // Fetch schedule (combined working days and time slots)
+        const scheduleResponse = await apiService.getMySchedule();
+        const scheduleData = scheduleResponse.data || [];
+
+        console.log('API Schedule Data:', scheduleData);
+
+        // Map schedule data to schedule format
+        const newSchedule = initialSchedule.map(day => {
+          const dayData = scheduleData.find((sd: any) => sd.day_of_week === day.dayOfWeek);
+          const daySlots = dayData?.slots?.map((slot: any) => ({
+            id: slot.id,
+            start: slot.start_time,
+            end: slot.end_time
+          })) || [];
+
+          return {
+            ...day,
+            id: dayData?.id,
+            enabled: dayData?.is_open === 1,
+            slots: daySlots
+          };
+        });
+
+        console.log('Mapped Schedule:', newSchedule);
+        setSchedule(newSchedule);
+        setOriginalSchedule(JSON.parse(JSON.stringify(newSchedule)));
+      } catch (error) {
+        console.error("Failed to fetch schedule data:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchScheduleData();
+  }, []);
 
   const toggleDay = (dayIndex: number) => {
     setSchedule(prev => prev.map((d, i) => i === dayIndex ? { ...d, enabled: !d.enabled } : d));
@@ -45,10 +91,14 @@ const DoctorSchedule = () => {
   };
 
   const addSlot = (dayIndex: number) => {
+    const newSlot = {
+      id: Date.now(), // Temporary ID for new slots
+      start: "09:00",
+      end: "12:00"
+    };
     setSchedule(prev => prev.map((d, i) => {
       if (i === dayIndex) {
-        const newId = d.slots.length > 0 ? Math.max(...d.slots.map(s => s.id)) + 1 : 1;
-        return { ...d, slots: [...d.slots, { id: newId, start: "09:00", end: "12:00" }] };
+        return { ...d, enabled: true, slots: [...d.slots, newSlot] };
       }
       return d;
     }));
@@ -58,7 +108,8 @@ const DoctorSchedule = () => {
   const removeSlot = (dayIndex: number, slotId: number) => {
     setSchedule(prev => prev.map((d, i) => {
       if (i === dayIndex) {
-        return { ...d, slots: d.slots.filter(s => s.id !== slotId) };
+        const newSlots = d.slots.filter(s => s.id !== slotId);
+        return { ...d, enabled: newSlots.length > 0, slots: newSlots };
       }
       return d;
     }));
@@ -75,9 +126,101 @@ const DoctorSchedule = () => {
     setSaved(false);
   };
 
-  const handleSave = () => {
-    setSaved(true);
-    setTimeout(() => setSaved(false), 3000);
+  const handleSave = async () => {
+    try {
+      setIsSaving(true);
+      setSaveError(null);
+
+      // Prepare days array - include only days with IDs (existing days)
+      const days = schedule
+        .filter(day => day.id !== undefined)
+        .map(day => ({
+          id: day.id!,
+          is_open: day.enabled
+        }));
+
+      // Prepare slots array
+      const slots: any[] = [];
+
+      schedule.forEach(day => {
+        if (day.enabled) {
+          day.slots.forEach(slot => {
+            // If slot has a real ID (not temporary), it's an update
+            if (slot.id < 1000000000) { // Assuming temporary IDs are large numbers
+              slots.push({
+                id: slot.id,
+                day_of_week: day.dayOfWeek,
+                start_time: slot.start,
+                end_time: slot.end
+              });
+            } else {
+              // New slot - don't include ID for creation
+              slots.push({
+                day_of_week: day.dayOfWeek,
+                start_time: slot.start,
+                end_time: slot.end
+              });
+            }
+          });
+        }
+      });
+
+      // Find deleted slots (slots that were in original but not in current)
+      originalSchedule.forEach(origDay => {
+        if (origDay.id !== undefined) {
+          const currentDay = schedule.find(d => d.dayOfWeek === origDay.dayOfWeek);
+          if (currentDay) {
+            origDay.slots.forEach(origSlot => {
+              const slotExists = currentDay.slots.some(s => s.id === origSlot.id);
+              if (!slotExists && origSlot.id < 1000000000) {
+                // Mark for deletion
+                slots.push({
+                  id: origSlot.id,
+                  "delete": true
+                });
+              }
+            });
+          }
+        }
+      });
+
+      console.log('Sending schedule update:', { days, slots });
+
+      const response = await apiService.updateSchedule({ days, slots });
+
+      if (response.success) {
+        setSaved(true);
+        setTimeout(() => setSaved(false), 3000);
+
+        // Refresh the schedule after successful save
+        const scheduleResponse = await apiService.getMySchedule();
+        const scheduleData = scheduleResponse.data || [];
+
+        const newSchedule = initialSchedule.map(day => {
+          const dayData = scheduleData.find((sd: any) => sd.day_of_week === day.dayOfWeek);
+          const daySlots = dayData?.slots?.map((slot: any) => ({
+            id: slot.id,
+            start: slot.start_time,
+            end: slot.end_time
+          })) || [];
+
+          return {
+            ...day,
+            id: dayData?.id,
+            enabled: dayData?.is_open === 1,
+            slots: daySlots
+          };
+        });
+
+        setSchedule(newSchedule);
+        setOriginalSchedule(JSON.parse(JSON.stringify(newSchedule)));
+      }
+    } catch (error: any) {
+      console.error("Failed to save schedule:", error);
+      setSaveError(error.message || "فشل حفظ الجدول. يرجى المحاولة مرة أخرى.");
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const totalHours = schedule.reduce((acc, day) => {
@@ -91,19 +234,33 @@ const DoctorSchedule = () => {
 
   return (
     <DashboardLayout title="أوقات العمل" items={sidebarItems} role="doctor">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-6">
+      {isLoading ? (
+        <div className="space-y-4">
+          {[1, 2, 3, 4, 5, 6, 7].map((i) => (
+            <div key={i} className="bg-white dark:bg-slate-800 rounded-xl p-5 animate-pulse">
+              <div className="h-6 bg-muted rounded w-1/4 mb-3" />
+              <div className="h-4 bg-muted rounded w-1/3" />
+            </div>
+          ))}
+        </div>
+      ) : (
+        <>
+          {/* Header */}
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-6">
         <div>
           <h2 className="text-base sm:text-lg font-bold text-foreground">جدول أوقات العمل</h2>
           <p className="text-xs text-muted-foreground mt-0.5">حدد أوقات توفرك للاستشارات</p>
+          {saveError && (
+            <p className="text-xs text-red-500 mt-1">{saveError}</p>
+          )}
         </div>
         <div className="flex items-center gap-3">
           <div className="text-xs text-muted-foreground bg-slate-100 dark:bg-slate-800 px-3 py-1.5 rounded-lg">
             إجمالي: <span className="font-bold text-foreground">{totalHours.toFixed(1)} ساعة/أسبوع</span>
           </div>
-          <Button onClick={handleSave} size="sm" className="rounded-xl gap-1.5 text-xs bg-primary">
+          <Button onClick={handleSave} size="sm" className="rounded-xl gap-1.5 text-xs bg-primary" disabled={isSaving}>
             <Save className="w-3.5 h-3.5" />
-            {saved ? "تم الحفظ ✓" : "حفظ"}
+            {isSaving ? "جاري الحفظ..." : saved ? "تم الحفظ ✓" : "حفظ"}
           </Button>
         </div>
       </div>
@@ -187,6 +344,8 @@ const DoctorSchedule = () => {
           </div>
         ))}
       </div>
+        </>
+      )}
     </DashboardLayout>
   );
 };

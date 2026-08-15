@@ -17,7 +17,7 @@ import DoctorDashboard from "./pages/doctor/DoctorDashboard";
 import DoctorPatients from "./pages/doctor/DoctorPatients";
 import DoctorConsultations from "./pages/doctor/DoctorConsultations";
 import DoctorSchedule from "./pages/doctor/DoctorSchedule";
-import DoctorEarnings from "./pages/doctor/DoctorEarnings";
+// import DoctorEarnings from "./pages/doctor/DoctorEarnings";
 import DoctorProfile from "./pages/doctor/DoctorProfile";
 // import DoctorMessages from "./pages/doctor/DoctorMessages";
 import PatientDashboard from "./pages/patient/PatientDashboard";
@@ -56,7 +56,7 @@ const App = () => (
             <Route path="/doctor/consultations" element={<DoctorConsultations />} />
             <Route path="/doctor/schedule" element={<DoctorSchedule />} />
             {/* <Route path="/doctor/messages" element={<DoctorMessages />} /> */}
-            <Route path="/doctor/earnings" element={<DoctorEarnings />} />
+            {/* <Route path="/doctor/earnings" element={<DoctorEarnings />} /> */}
             <Route path="/doctor/profile" element={<DoctorProfile />} />
             <Route path="/patient" element={<PatientDashboard />}>
               <Route index element={<div>مرحباً في لوحة التحكم</div>} />

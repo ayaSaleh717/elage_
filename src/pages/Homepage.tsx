@@ -5,16 +5,27 @@ import FeaturesSection from "@/components/landing/FeaturesSection";
 import HowItWorks from "@/components/landing/HowItWorks";
 import DoctorsSection from "@/components/landing/DoctorsSection";
 import Footer from "@/components/landing/Footer";
+import { useState, useEffect } from "react";
+import { apiService } from "@/services/api";
 
 const Homepage = () => {
+  const [userRole, setUserRole] = useState<string | null>(null);
+
+  useEffect(() => {
+    const currentUser = apiService.getCurrentUser();
+    if (currentUser) {
+      setUserRole(currentUser.role);
+    }
+  }, []);
+
   return (
     <div className="min-h-screen">
       <Navbar />
-      <HeroSection />
+      <HeroSection userRole={userRole} />
       <NewsSection />
       <FeaturesSection />
       <HowItWorks />
-      <DoctorsSection />
+      {userRole !== 'doctor' && <DoctorsSection />}
       <Footer />
     </div>
   );

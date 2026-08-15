@@ -617,6 +617,331 @@ class ApiService {
       throw error;
     }
   }
+
+  // Add Time Slot
+  async addTimeSlot(data: { day_of_week: number; start_time: string; end_time: string }): Promise<{ success: boolean; message?: string; data?: any }> {
+    try {
+      const response = await this.request('/api/doctor/time-slots', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      });
+
+      const result = await response.json();
+      console.log('Add Time Slot API Response:', result);
+
+      if (!response.ok) {
+        const error: any = new Error(result.message || 'حدث خطأ أثناء إضافة فترة العمل');
+        error.status = response.status;
+        error.errors = result.errors;
+        throw error;
+      }
+
+      return { success: true, message: result.message || 'تم إضافة فترة العمل بنجاح', data: result.data };
+    } catch (error) {
+      console.error('Add time slot error:', error);
+      throw error;
+    }
+  }
+
+  // Get Doctor Time Slots
+  async getDoctorTimeSlots(): Promise<{ success: boolean; data?: any; message?: string }> {
+    try {
+      const response = await this.request('/api/doctor/time-slots', {
+        method: 'GET',
+      });
+
+      const result = await response.json();
+      console.log('Get Doctor Time Slots API Response:', result);
+
+      if (!response.ok) {
+        const error: any = new Error(result.message || 'حدث خطأ أثناء جلب فترات العمل');
+        error.status = response.status;
+        throw error;
+      }
+
+      return { success: true, data: result.data || result, message: result.message };
+    } catch (error) {
+      console.error('Get doctor time slots error:', error);
+      throw error;
+    }
+  }
+
+  // Delete Time Slot
+  async deleteTimeSlot(slotId: number): Promise<{ success: boolean; message?: string }> {
+    try {
+      const response = await this.request(`/api/doctor/time-slots/${slotId}`, {
+        method: 'DELETE',
+      });
+
+      const result = await response.json();
+      console.log('Delete Time Slot API Response:', result);
+
+      if (!response.ok) {
+        const error: any = new Error(result.message || 'حدث خطأ أثناء حذف فترة العمل');
+        error.status = response.status;
+        throw error;
+      }
+
+      return { success: true, message: result.message || 'تم حذف فترة العمل بنجاح' };
+    } catch (error) {
+      console.error('Delete time slot error:', error);
+      throw error;
+    }
+  }
+
+  // Get Specializations
+  async getSpecializations(): Promise<{ success: boolean; data?: string[]; message?: string }> {
+    try {
+      const response = await this.request('/api/specializations', {
+        method: 'GET',
+      });
+
+      const result = await response.json();
+      console.log('Get Specializations API Response:', result);
+
+      if (!response.ok) {
+        const error: any = new Error(result.message || 'حدث خطأ أثناء جلب التخصصات');
+        error.status = response.status;
+        throw error;
+      }
+
+      return { success: true, data: result.specializations || [], message: result.message };
+    } catch (error) {
+      console.error('Get specializations error:', error);
+      throw error;
+    }
+  }
+
+  // Get My Schedule (for doctor to view their own schedule)
+  async getMySchedule(): Promise<{ success: boolean; data?: any; message?: string }> {
+    try {
+      console.log('Fetching schedule from /api/doctor/schedule');
+      const response = await this.request('/api/doctor/schedule', {
+        method: 'GET',
+      });
+
+      const result = await response.json();
+      console.log('Get My Schedule API Response:', result);
+
+      if (!response.ok) {
+        const error: any = new Error(result.message || 'حدث خطأ أثناء جلب الجدول');
+        error.status = response.status;
+        throw error;
+      }
+
+      return { success: true, data: result.schedule || result, message: result.message };
+    } catch (error) {
+      console.error('Get my schedule error:', error);
+      throw error;
+    }
+  }
+
+  // Get Working Days
+  async getWorkingDays(): Promise<{ success: boolean; data?: any; message?: string }> {
+    try {
+      const response = await this.request('/api/doctor/working-days', {
+        method: 'GET',
+      });
+
+      const result = await response.json();
+      console.log('Get Working Days API Response:', result);
+
+      if (!response.ok) {
+        const error: any = new Error(result.message || 'حدث خطأ أثناء جلب أيام العمل');
+        error.status = response.status;
+        throw error;
+      }
+
+      return { success: true, data: result.days || result, message: result.message };
+    } catch (error) {
+      console.error('Get working days error:', error);
+      throw error;
+    }
+  }
+
+  // Update Working Day
+  async updateWorkingDay(dayId: number, isOpen: number): Promise<{ success: boolean; message?: string }> {
+    try {
+      const response = await this.request(`/api/doctor/working-days/${dayId}`, {
+        method: 'PUT',
+        body: JSON.stringify({ is_open: isOpen }),
+      });
+
+      const result = await response.json();
+      console.log('Update Working Day API Response:', result);
+
+      if (!response.ok) {
+        const error: any = new Error(result.message || 'حدث خطأ أثناء تحديث يوم العمل');
+        error.status = response.status;
+        throw error;
+      }
+
+      return { success: true, message: result.message || 'تم تحديث يوم العمل بنجاح' };
+    } catch (error) {
+      console.error('Update working day error:', error);
+      throw error;
+    }
+  }
+
+  // Get Doctor Consultations
+  async getDoctorConsultations(): Promise<{ success: boolean; data?: any; message?: string }> {
+    try {
+      const response = await this.request('/api/doctor/consultations', {
+        method: 'GET',
+      });
+
+      const result = await response.json();
+      console.log('Get Doctor Consultations API Response:', result);
+
+      if (!response.ok) {
+        const error: any = new Error(result.message || 'حدث خطأ أثناء جلب الاستشارات');
+        error.status = response.status;
+        throw error;
+      }
+
+      return { success: true, data: result.consultations || result, message: result.message };
+    } catch (error) {
+      console.error('Get doctor consultations error:', error);
+      throw error;
+    }
+  }
+
+  // Update Doctor Schedule
+  async updateSchedule(data: { days: Array<{ id: number; is_open: boolean }>; slots: Array<any> }): Promise<{ success: boolean; message?: string; data?: any }> {
+    try {
+      console.log('Update Schedule Request Data:', data);
+      console.log('Update Schedule Request URL:', `${this.getBaseUrl()}/api/doctor/schedule`);
+
+      const response = await this.request('/api/doctor/schedule', {
+        method: 'PUT',
+        body: JSON.stringify(data),
+      });
+
+      console.log('Update Schedule Response Status:', response.status);
+      console.log('Update Schedule Response OK:', response.ok);
+
+      const result = await response.json();
+      console.log('Update Schedule API Response:', result);
+
+      if (!response.ok) {
+        const error: any = new Error(result.message || 'حدث خطأ أثناء تحديث الجدول');
+        error.status = response.status;
+        error.errors = result.errors;
+        throw error;
+      }
+
+      return { success: true, message: result.message || 'تم تحديث الجدول بنجاح', data: result.data };
+    } catch (error) {
+      console.error('Update schedule error:', error);
+      console.error('Error details:', {
+        message: error instanceof Error ? error.message : 'Unknown error',
+        stack: error instanceof Error ? error.stack : undefined
+      });
+      throw error;
+    }
+  }
+
+  // Get Doctor Patients
+  async getDoctorPatients(): Promise<{ success: boolean; data?: any; message?: string }> {
+    try {
+      console.log('Fetching patients from /api/doctor/patients');
+      const response = await this.request('/api/doctor/patients', {
+        method: 'GET',
+      });
+
+      const result = await response.json();
+      console.log('Get Doctor Patients API Response:', result);
+
+      if (!response.ok) {
+        const error: any = new Error(result.message || 'حدث خطأ أثناء جلب المرضى');
+        error.status = response.status;
+        throw error;
+      }
+
+      return { success: true, data: result.patients || result, message: result.message };
+    } catch (error) {
+      console.error('Get doctor patients error:', error);
+      throw error;
+    }
+  }
+
+  // Get Patient Details
+  async getPatientDetails(patientId: number): Promise<{ success: boolean; data?: any; message?: string }> {
+    try {
+      console.log(`Fetching patient details for patient ${patientId}`);
+      const response = await this.request(`/api/doctor/patients/${patientId}`, {
+        method: 'GET',
+      });
+
+      const result = await response.json();
+      console.log('Get Patient Details API Response:', result);
+
+      if (!response.ok) {
+        const error: any = new Error(result.message || 'حدث خطأ أثناء جلب تفاصيل المريض');
+        error.status = response.status;
+        throw error;
+      }
+
+      return { success: true, data: result.patient || result, message: result.message };
+    } catch (error) {
+      console.error('Get patient details error:', error);
+      throw error;
+    }
+  }
+
+  // Complete Consultation
+  async completeConsultation(consultationId: number, data: { symptoms: string; diagnosis: string; prescription: string; notes: string }): Promise<{ success: boolean; message?: string; data?: any }> {
+    try {
+      console.log(`Completing consultation ${consultationId} with data:`, data);
+      const response = await this.request(`/api/doctor/consultations/${consultationId}/complete`, {
+        method: 'PUT',
+        body: JSON.stringify(data),
+      });
+
+      const result = await response.json();
+      console.log('Complete Consultation API Response:', result);
+
+      if (!response.ok) {
+        const error: any = new Error(result.message || 'حدث خطأ أثناء إكمال الاستشارة');
+        error.status = response.status;
+        error.errors = result.errors;
+        throw error;
+      }
+
+      return { success: true, message: result.message || 'تم إكمال الاستشارة بنجاح', data: result.data };
+    } catch (error) {
+      console.error('Complete consultation error:', error);
+      throw error;
+    }
+  }
+
+  // Get Doctor Dashboard Stats
+  async getDoctorDashboard(): Promise<{ success: boolean; data?: any; message?: string }> {
+    try {
+      console.log('Fetching doctor dashboard stats from /api/doctor/dashboard');
+      const response = await this.request('/api/doctor/dashboard', {
+        method: 'GET',
+      });
+
+      const result = await response.json();
+      console.log('Get Doctor Dashboard API Response:', result);
+
+      if (!response.ok) {
+        const error: any = new Error(result.message || 'حدث خطأ أثناء جلب إحصائيات لوحة التحكم');
+        error.status = response.status;
+        throw error;
+      }
+
+      return { success: true, data: result.data || result, message: result.message };
+    } catch (error) {
+      console.error('Get doctor dashboard error:', error);
+      throw error;
+    }
+  }
+
+  private getBaseUrl(): string {
+    return 'https://wolflike-merri-nugatory.ngrok-free.dev';
+  }
 }
 
 export const apiService = new ApiService();
