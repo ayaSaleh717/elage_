@@ -48,6 +48,8 @@ const AdminUsers = () => {
   const [filterStatus, setFilterStatus] = useState<string>("الكل");
   const [usersData, setUsersData] = useState<User[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [actionLoading, setActionLoading] = useState<number | null>(null);
+  const [menuOpen, setMenuOpen] = useState<number | null>(null);
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -81,6 +83,70 @@ const AdminUsers = () => {
     const matchesStatus = filterStatus === "الكل" || user.status === filterStatus;
     return matchesSearch && matchesRole && matchesStatus;
   }) : [];
+
+  const toggleMenu = (userId: number) => {
+    setMenuOpen(menuOpen === userId ? null : userId);
+  };
+
+  const closeMenu = () => {
+    setMenuOpen(null);
+  };
+
+  const handleBan = async (userId: number) => {
+    try {
+      setActionLoading(userId);
+      const response = await apiService.banUser(userId);
+      console.log('Ban response:', response);
+      
+      if (response.success) {
+        // Update the user status locally
+        setUsersData(prev => prev.map(user => 
+          user.id === userId ? { ...user, status: "suspended" } : user
+        ));
+        console.log('User status updated to suspended');
+      }
+    } catch (error) {
+      console.error("Failed to ban user:", error);
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  const handleUnban = async (userId: number) => {
+    try {
+      setActionLoading(userId);
+      const response = await apiService.unbanUser(userId);
+      console.log('Unban response:', response);
+      
+      if (response.success) {
+        // Update the user status locally
+        setUsersData(prev => prev.map(user => 
+          user.id === userId ? { ...user, status: "active" } : user
+        ));
+        console.log('User status updated to active');
+      }
+    } catch (error) {
+      console.error("Failed to unban user:", error);
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (menuOpen !== null) {
+        const target = event.target as HTMLElement;
+        if (!target.closest('.relative')) {
+          setMenuOpen(null);
+        }
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [menuOpen]);
 
   const roleLabels: Record<string, string> = {
     doctor: "طبيب",
@@ -258,9 +324,47 @@ const AdminUsers = () => {
                     </div>
                     <p className="text-xs font-medium text-foreground">{user.joined_at}</p>
                   </div>
-                  <Button variant="outline" size="sm" className="rounded-lg h-8 w-8 p-0">
-                    <MoreVertical className="w-4 h-4" />
-                  </Button>
+                  <div className="relative z-[100]">
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="rounded-lg h-8 w-8 p-0"
+                      onClick={(e) => { e.stopPropagation(); toggleMenu(user.id); }}
+                    >
+                      <MoreVertical className="w-4 h-4" />
+                    </Button>
+                    {menuOpen === user.id && (
+                      <div className="absolute left-0 bottom-full mb-2 z-10 focus-within:z-50 bg-white dark:bg-slate-800 rounded-lg shadow-2xl border border-slate-200 dark:border-slate-700 py-1 z-[9999] min-w-[140px]">
+                        {user.status === "active" ? (
+                          <button
+                            onClick={(e) => { e.stopPropagation(); handleBan(user.id); closeMenu(); }}
+                            disabled={actionLoading === user.id}
+                            className="w-full px-3 py-2 z-10 focus:z-50 text-sm text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/20 flex items-center gap-2 transition-colors"
+                          >
+                            {actionLoading === user.id ? (
+                              <div className="w-3 h-3 border-2 border-red-300 border-t-red-600 rounded-full animate-spin" />
+                            ) : (
+                              <Ban className="w-3.5 h-3.5" />
+                            )}
+                            حظر المستخدم
+                          </button>
+                        ) : (
+                          <button
+                            onClick={(e) => { e.stopPropagation(); handleUnban(user.id); closeMenu(); }}
+                            disabled={actionLoading === user.id}
+                            className="w-full px-3 py-2 text-sm text-emerald-600 hover:bg-emerald-50 dark:text-emerald-400 dark:hover:bg-emerald-900/20 flex items-center gap-2 transition-colors"
+                          >
+                            {actionLoading === user.id ? (
+                              <div className="w-3 h-3 border-2 border-emerald-300 border-t-emerald-600 rounded-full animate-spin" />
+                            ) : (
+                              <Check className="w-3.5 h-3.5" />
+                            )}
+                            فك الحظر
+                          </button>
+                        )}
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>

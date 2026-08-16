@@ -641,6 +641,56 @@ class ApiService {
     }
   }
 
+  // Ban User
+  async banUser(userId: number): Promise<{ success: boolean; message?: string; data?: any }> {
+    try {
+      console.log(`Banning user ${userId}`);
+      const response = await this.request(`/api/admin/users/${userId}/ban`, {
+        method: 'POST',
+      });
+
+      const result = await response.json();
+      console.log('Ban User API Response:', result);
+
+      if (!response.ok) {
+        const error: any = new Error(result.message || 'حدث خطأ أثناء حظر المستخدم');
+        error.status = response.status;
+        error.errors = result.errors;
+        throw error;
+      }
+
+      return { success: true, message: result.message || 'تم حظر المستخدم بنجاح', data: result.data };
+    } catch (error) {
+      console.error('Ban user error:', error);
+      throw error;
+    }
+  }
+
+  // Unban User
+  async unbanUser(userId: number): Promise<{ success: boolean; message?: string; data?: any }> {
+    try {
+      console.log(`Unbanning user ${userId}`);
+      const response = await this.request(`/api/admin/users/${userId}/unban`, {
+        method: 'POST',
+      });
+
+      const result = await response.json();
+      console.log('Unban User API Response:', result);
+
+      if (!response.ok) {
+        const error: any = new Error(result.message || 'حدث خطأ أثناء فك الحظر عن المستخدم');
+        error.status = response.status;
+        error.errors = result.errors;
+        throw error;
+      }
+
+      return { success: true, message: result.message || 'تم فك الحظر عن المستخدم بنجاح', data: result.data };
+    } catch (error) {
+      console.error('Unban user error:', error);
+      throw error;
+    }
+  }
+
   // Get Join Requests
   async getJoinRequests(): Promise<{ success: boolean; data?: any; message?: string }> {
     try {

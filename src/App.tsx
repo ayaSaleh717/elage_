@@ -46,6 +46,23 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   return <>{children}</>;
 };
 
+// Homepage Route Component - redirects admin/doctor to dashboards
+const HomepageRoute = () => {
+  const isAuthenticated = apiService.isAuthenticated();
+  
+  if (isAuthenticated) {
+    const user = apiService.getCurrentUser();
+    if (user?.role === 'admin') {
+      return <Navigate to="/admin" replace />;
+    }
+    if (user?.role === 'doctor') {
+      return <Navigate to="/doctor" replace />;
+    }
+  }
+  
+  return <Homepage />;
+};
+
 const App = () => (
   <ThemeProvider>
     <QueryClientProvider client={queryClient}>
@@ -54,7 +71,7 @@ const App = () => (
         <Sonner />
         <BrowserRouter>
           <Routes>
-            <Route path="/" element={<Homepage />} />
+            <Route path="/" element={<HomepageRoute />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />

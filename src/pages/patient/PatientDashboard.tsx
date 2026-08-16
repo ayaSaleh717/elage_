@@ -12,7 +12,7 @@ const sidebarItems = [
   { icon: <LayoutDashboard className="w-4 h-4" />, label: "الإحصائيات", path: "/patient" },
   { icon: <Bot className="w-4 h-4" />, label: "استشارة ذكية", path: "/patient/ai-consultation" },
   { icon: <Stethoscope className="w-4 h-4" />, label: "استشاراتي", path: "/patient/consultations" },
-  { icon: <FileText className="w-4 h-4" />, label: "السجل الطبي", path: "/patient/records" },
+  // { icon: <FileText className="w-4 h-4" />, label: "السجل الطبي", path: "/patient/records" },
   { icon: <User className="w-4 h-4" />, label: "الملف الشخصي", path: "/patient/profile" },
 ];
 
