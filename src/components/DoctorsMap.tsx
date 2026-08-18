@@ -148,9 +148,7 @@ const DoctorsMap = ({ doctors }: DoctorsMapProps) => {
           <div style="text-align:center;direction:rtl;font-family:Tajawal,sans-serif;min-width:160px;padding:6px">
             <h3 style="font-weight:bold;font-size:14px;margin:0 0 4px">${doc.name}</h3>
             <p style="color:#0d9488;font-size:12px;margin:0 0 4px">${doc.specialty}</p>
-            <p style="font-size:12px;margin:0 0 4px">⭐ ${doc.rating} (${doc.reviews} تقييم)</p>
             ${distance ? `<p style="font-size:11px;color:#6b7280;margin:0 0 4px">📍 ${distance} كم منك</p>` : ""}
-            // <p style="font-weight:bold;font-size:13px;margin:0 0 4px">${doc.price} د.ج</p>
             <span style="font-size:11px;padding:2px 8px;border-radius:10px;background:${doc.available ? "#dcfce7" : "#f3f4f6"};color:${doc.available ? "#16a34a" : "#9ca3af"}">
               ${doc.available ? "متاح الآن" : "غير متاح"}
             </span>

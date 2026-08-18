@@ -22,6 +22,7 @@ import { useState, useRef, useEffect } from "react";
 import { Link } from "react-router-dom";
 import doctorsData from "@/components/data/doctor.json";
 import { GoogleGenAI } from "@google/genai";
+import { apiService } from "@/services/api";
 
 const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
 
@@ -1041,6 +1042,27 @@ return {
         const specialtiesText = specialties
           .map((s) => `• ${s}`)
           .join("\n");
+
+        // Save consultation to API
+        try {
+          const consultationData = {
+            diagnosis: summary,
+            suggested_specialization: specialties[0] || "طب عام",
+          };
+
+          console.log("===== Sending AI Consultation to API =====");
+          console.log("Request data:", consultationData);
+          console.log("===========================================");
+
+          const response = await apiService.addPatientAIConsultation(consultationData);
+
+          console.log("===== AI Consultation API Response =====");
+          console.log("Response:", response);
+          console.log("=========================================");
+        } catch (error) {
+          console.error("Failed to save AI consultation:", error);
+          // Don't block the UI if API call fails
+        }
 
         const aiMessage: Message = {
           role: "assistant",

@@ -285,7 +285,6 @@ const DoctorProfile = () => {
               <p className="text-xs sm:text-sm text-primary font-medium">{profile.specialty} • {profile.subSpecialty}</p>
               <div className="flex items-center justify-center sm:justify-start gap-3 mt-2 text-xs text-muted-foreground">
                 <span className="flex items-center gap-1"><MapPin className="w-3 h-3" />{profile.location}</span>
-                <span className="flex items-center gap-1"><Star className="w-3 h-3 text-amber-500" />4.8 (156 تقييم)</span>
               </div>
             </div>
 

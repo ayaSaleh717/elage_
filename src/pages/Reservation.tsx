@@ -18,6 +18,8 @@ import {
   UserRound,
   CheckCircle2,
   ArrowRight,
+  GraduationCap,
+  Trophy,
   AlertCircle,
   Calendar,
 } from "lucide-react";
@@ -62,9 +64,6 @@ const Reservation = () => {
   const [selectedDate, setSelectedDate] = useState("");
   const [selectedTime, setSelectedTime] = useState("");
   const [selectedSlot, setSelectedSlot] = useState<{id: number, start_time: string, end_time: string, is_available: boolean} | null>(null);
-  const [patientName, setPatientName] = useState("");
-  const [patientPhone, setPatientPhone] = useState("");
-  const [notes, setNotes] = useState("");
   const [submitted, setSubmitted] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
@@ -325,8 +324,6 @@ const Reservation = () => {
                         </h3>
                         <div className="flex items-center justify-center gap-1 mt-1">
                           <Star className="w-4 h-4 text-accent fill-accent" />
-                          <span className="text-sm font-semibold">{doctor.rating}</span>
-                          <span className="text-xs text-muted-foreground">({doctor.reviews} تقييم)</span>
                         </div>
                       </div>
                     </div>
@@ -337,6 +334,32 @@ const Reservation = () => {
                         {specialtyIcons[doctor.specialty] || <Stethoscope className="w-5 h-5" />}
                       </div>
                       <span className="text-sm font-medium text-primary">{doctor.specialty}</span>
+                    </div>
+
+                    {/* Sub-specialization */}
+                    {doctor.sub_specialization && (
+                      <div className="flex items-center gap-2.5 px-4 py-3 rounded-xl bg-muted/50 border border-border/30">
+                        <div className="text-muted-foreground">
+                          <Stethoscope className="w-4 h-4" />
+                        </div>
+                        <span className="text-sm font-medium text-foreground">{doctor.sub_specialization}</span>
+                      </div>
+                    )}
+
+                    {/* Degree & Experience */}
+                    <div className="flex items-center justify-between gap-2 text-sm">
+                      {doctor.degree && (
+                        <div className="flex items-center gap-1.5 text-muted-foreground">
+                          <GraduationCap className="w-3.5 h-3.5" />
+                          <span className="text-xs">{doctor.degree}</span>
+                        </div>
+                      )}
+                      {doctor.experience_years && (
+                        <div className="flex items-center gap-1.5 text-muted-foreground">
+                          <Trophy className="w-3.5 h-3.5" />
+                          <span className="text-xs">{doctor.experience_years} سنة خبرة</span>
+                        </div>
+                      )}
                     </div>
 
                     {/* Details */}
@@ -351,10 +374,10 @@ const Reservation = () => {
                           <span className="line-clamp-2">{locationName}</span>
                         </div>
                       )}
-                      <div className="flex items-center justify-between pt-3 border-t border-border/50">
+                      {/* <div className="flex items-center justify-between pt-3 border-t border-border/50">
                         <span className="text-sm text-muted-foreground">سعر الاستشارة</span>
                         <span className="font-bold text-foreground">{doctor.price} د.ج</span>
-                      </div>
+                      </div> */}
                     </div>
                   </div>
                 </div>
@@ -440,45 +463,6 @@ const Reservation = () => {
                   )}
                 </div>
 
-                {/* Patient info */}
-                <div className="bg-card rounded-2xl border border-border/50 shadow-card p-6 space-y-4">
-                  <h3 className="font-display font-bold text-foreground flex items-center gap-2">
-                    <UserRound className="w-5 h-5 text-primary" />
-                    بيانات المريض
-                  </h3>
-                  <div className="grid sm:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium text-foreground">الاسم الكامل</label>
-                      <Input
-                        placeholder="أدخل اسمك الكامل"
-                        value={patientName}
-                        onChange={(e) => setPatientName(e.target.value)}
-                        required
-                        className="h-12 rounded-xl"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium text-foreground">رقم الهاتف</label>
-                      <Input
-                        placeholder="أدخل رقم هاتفك"
-                        value={patientPhone}
-                        onChange={(e) => setPatientPhone(e.target.value)}
-                        required
-                        className="h-12 rounded-xl"
-                      />
-                    </div>
-                  </div>
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium text-foreground">ملاحظات (اختياري)</label>
-                    <Textarea
-                      placeholder="أضف أي ملاحظات أو أعراض تريد إخبار الطبيب بها..."
-                      value={notes}
-                      onChange={(e) => setNotes(e.target.value)}
-                      className="rounded-xl min-h-[100px] resize-none"
-                    />
-                  </div>
-                </div>
-
                 {/* Error display */}
                 {error && (
                   <div className="bg-destructive/10 border border-destructive/20 text-destructive rounded-xl p-4 text-sm flex items-center gap-2">
@@ -505,19 +489,14 @@ const Reservation = () => {
                       <span className="text-muted-foreground">الوقت</span>
                       <span className="font-medium text-foreground">{selectedTime || "—"}</span>
                     </div>
-                    {doctor && (
-                      <div className="flex justify-between p-3 rounded-lg bg-muted/50">
-                        <span className="text-muted-foreground">السعر</span>
-                        <span className="font-medium text-foreground">{doctor.price} د.ج</span>
-                      </div>
-                    )}
+                  
                   </div>
 
                   <Button
                     type="submit"
                     size="lg"
                     className="w-full bg-gradient-primary text-primary-foreground hover:opacity-90 gap-2 text-base h-14 rounded-xl shadow-lg shadow-primary/20 transition-all hover:shadow-xl hover:shadow-primary/30 hover:-translate-y-0.5"
-                    disabled={!selectedDate || !selectedTime || !patientName || !patientPhone || isLoading}
+                    disabled={!selectedDate || !selectedTime || isLoading}
                   >
                     {isLoading ? (
                       <>

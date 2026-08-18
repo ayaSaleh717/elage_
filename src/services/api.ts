@@ -58,6 +58,7 @@ export interface UpdatePatientProfileRequest {
   height: number;
   weight: number;
   phone: string;
+  blood_type?: string;
 }
 
 export interface Doctor {
@@ -67,6 +68,9 @@ export interface Doctor {
   name: string;
   specialty: string;
   specialization: string;
+  sub_specialization?: string;
+  degree?: string;
+  experience_years?: number;
   location: string;
   price: number;
   rating: number;
@@ -402,6 +406,9 @@ class ApiService {
           name: `${doc.first_name} ${doc.last_name}`,
           specialty: doc.specialization,
           specialization: doc.specialization,
+          sub_specialization: doc.sub_specialization,
+          degree: doc.degree,
+          experience_years: doc.experience_years,
           location: doc.location || 'غير محدد',
           price: doc.price || 0,
           rating: doc.rating || 0,
@@ -975,6 +982,31 @@ class ApiService {
       return { success: true, data: result.specializations || [], message: result.message };
     } catch (error) {
       console.error('Get specializations error:', error);
+      throw error;
+    }
+  }
+
+  // Add Patient AI Consultation
+  async addPatientAIConsultation(data: { diagnosis: string; suggested_specialization: string }): Promise<{ success: boolean; message?: string; data?: any }> {
+    try {
+      const response = await this.request('/api/patient/ai/consultations', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      });
+
+      const result = await response.json();
+      console.log('Add Patient AI Consultation API Response:', result);
+
+      if (!response.ok) {
+        const error: any = new Error(result.message || 'حدث خطأ أثناء حفظ الاستشارة');
+        error.status = response.status;
+        error.errors = result.errors;
+        throw error;
+      }
+
+      return { success: true, message: result.message || 'تم حفظ الاستشارة بنجاح', data: result.data };
+    } catch (error) {
+      console.error('Add patient AI consultation error:', error);
       throw error;
     }
   }

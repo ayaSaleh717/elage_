@@ -296,8 +296,8 @@ const DoctorsPage = () => {
                         </h3>
                         <div className="flex items-center gap-1 mt-0.5">
                           <Star className="w-3.5 h-3.5 text-accent fill-accent" />
-                          <span className="text-sm font-semibold text-foreground">{doc.rating}</span>
-                          <span className="text-xs text-muted-foreground">({doc.reviews} تقييم)</span>
+                          {/* <span className="text-sm font-semibold text-foreground">{doc.rating}</span> */}
+                          {/* <span className="text-xs text-muted-foreground">({doc.reviews} تقييم)</span> */}
                         </div>
                       </div>
                     </div>
@@ -320,7 +320,7 @@ const DoctorsPage = () => {
 
                     {/* Price & availability */}
                     <div className="flex items-center justify-between">
-                      <span className="text-sm font-bold text-foreground">{doc.price} د.ج</span>
+                      {/* <span className="text-sm font-bold text-foreground">{doc.price} د.ج</span> */}
                       <span
                         className={`text-xs px-2.5 py-1 rounded-full font-medium ${
                           doctorAvailability[doc.id] !== false
