@@ -234,14 +234,14 @@ const Login = () => {
           </div>
 
           {/* Divider */}
-          <div className="relative">
+          {/* <div className="relative">
             <div className="absolute inset-0 flex items-center">
               <div className="w-full border-t border-border/60" />
             </div>
             <div className="relative flex justify-center text-xs">
               <span className="bg-background px-4 text-muted-foreground">أو وصول سريع</span>
             </div>
-          </div>
+          </div> */}
 
           {/* Quick Demo Access */}
           {/* <div className="grid grid-cols-3 gap-3">
