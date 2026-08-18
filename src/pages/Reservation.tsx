@@ -366,14 +366,8 @@ const Reservation = () => {
                     <div className="space-y-3">
                       <div className="flex items-center gap-2.5 text-sm text-muted-foreground">
                         <MapPin className="w-4 h-4" />
-                        <span>{doctor.location}</span>
+                        <span>{locationName || doctor.location}</span>
                       </div>
-                      {locationName && (
-                        <div className="flex items-start gap-2.5 text-xs text-muted-foreground">
-                          <MapPin className="w-3 h-3 mt-0.5" />
-                          <span className="line-clamp-2">{locationName}</span>
-                        </div>
-                      )}
                       {/* <div className="flex items-center justify-between pt-3 border-t border-border/50">
                         <span className="text-sm text-muted-foreground">سعر الاستشارة</span>
                         <span className="font-bold text-foreground">{doctor.price} د.ج</span>
