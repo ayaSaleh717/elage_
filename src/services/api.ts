@@ -32,6 +32,11 @@ export interface AuthResponse {
     firstName: string;
     lastName: string;
     role: string;
+    // User Status - حالة المستخدم العامة (تنطبق على الجميع)
+    status?: 'active' | 'banned' | 'pending';
+    // Doctor Status - حالة الطبيب الخاصة (تنطبق فقط على الأطباء)
+    doctor_status?: 'approved' | 'pending' | 'rejected';
+    email_verified_at?: string | null;
   };
 }
 
@@ -1234,6 +1239,80 @@ class ApiService {
       return { success: true, data: result.data || result, message: result.message };
     } catch (error) {
       console.error('Get doctor dashboard error:', error);
+      throw error;
+    }
+  }
+
+  // Get Doctor Status (Admin only)
+  async getDoctorStatus(doctorId: number): Promise<{ success: boolean; data?: any; message?: string }> {
+    try {
+      console.log(`Getting doctor ${doctorId} status`);
+      const response = await this.request(`/api/admin/doctors/${doctorId}/status`, {
+        method: 'GET',
+      });
+
+      const result = await response.json();
+      console.log('Get Doctor Status API Response:', result);
+
+      if (!response.ok) {
+        const error: any = new Error(result.message || 'حدث خطأ أثناء جلب حالة الطبيب');
+        error.status = response.status;
+        throw error;
+      }
+
+      return { success: true, data: result.data || result, message: result.message };
+    } catch (error) {
+      console.error('Get doctor status error:', error);
+      throw error;
+    }
+  }
+
+  // Get Doctor Status by User ID (works for doctors checking their own status)
+  async getDoctorStatusByUserId(userId: number): Promise<{ success: boolean; data?: any; message?: string }> {
+    try {
+      console.log(`Getting doctor status for user ${userId}`);
+      const response = await this.request(`/api/doctors/user/${userId}/status`, {
+        method: 'GET',
+      });
+
+      const result = await response.json();
+      console.log('Get Doctor Status by User ID API Response:', result);
+
+      if (!response.ok) {
+        const error: any = new Error(result.message || 'حدث خطأ أثناء جلب حالة الطبيب');
+        error.status = response.status;
+        throw error;
+      }
+
+      return { success: true, data: result.data || result, message: result.message };
+    } catch (error) {
+      console.error('Get doctor status by user ID error:', error);
+      throw error;
+    }
+  }
+
+  // Update Doctor Status
+  async updateDoctorStatus(doctorId: number, status: string): Promise<{ success: boolean; message?: string; data?: any }> {
+    try {
+      console.log(`Updating doctor ${doctorId} status to ${status}`);
+      const response = await this.request(`/api/admin/doctors/${doctorId}/status`, {
+        method: 'PUT',
+        body: JSON.stringify({ status }),
+      });
+
+      const result = await response.json();
+      console.log('Update Doctor Status API Response:', result);
+
+      if (!response.ok) {
+        const error: any = new Error(result.message || 'حدث خطأ أثناء تحديث حالة الطبيب');
+        error.status = response.status;
+        error.errors = result.errors;
+        throw error;
+      }
+
+      return { success: true, message: result.message || 'تم تحديث حالة الطبيب بنجاح', data: result.data };
+    } catch (error) {
+      console.error('Update doctor status error:', error);
       throw error;
     }
   }

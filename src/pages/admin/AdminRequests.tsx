@@ -16,6 +16,8 @@ const sidebarItems = [
 
 interface JoinRequest {
   id: number;
+  user_id?: number; // ID of the user/doctor
+  doctor_id?: number; // Alternative field for doctor ID
   name: string;
   specialization: string;
   sub_specialization: string | null;
@@ -66,6 +68,16 @@ const AdminRequests = () => {
         if (response.success && response.data) {
           const requests = Array.isArray(response.data) ? response.data : [];
           console.log('Setting requestsData with:', requests);
+          // Log each request to see the structure
+          requests.forEach((req: any, index: number) => {
+            console.log(`Request ${index}:`, {
+              id: req.id,
+              user_id: req.user_id,
+              doctor_id: req.doctor_id,
+              name: req.name,
+              status: req.status
+            });
+          });
           setRequestsData(requests);
         }
       } catch (error) {
@@ -85,17 +97,33 @@ const AdminRequests = () => {
     return matchesSearch && matchesStatus;
   }) : [];
 
-  const handleApprove = async (id: number) => {
+  const handleApprove = async (requestId: number) => {
     try {
-      setActionLoading(id);
-      const response = await apiService.approveJoinRequest(id);
+      setActionLoading(requestId);
+      
+      // Find the request to get the correct doctor/user ID
+      const request = requestsData.find(req => req.id === requestId);
+      if (!request) {
+        console.error('Request not found:', requestId);
+        return;
+      }
+
+      // Use doctor_id or user_id if available, otherwise use the request id
+      const doctorId = request.doctor_id || request.user_id || requestId;
+      console.log(`Approving request ${requestId} with doctor ID: ${doctorId}`);
+      
+      const response = await apiService.updateDoctorStatus(doctorId, "approved");
+      console.log('Approve response:', response);
       
       if (response.success) {
         // Update the request status locally
         setRequestsData(prev => prev.map(req => 
-          req.id === id ? { ...req, status: "approved" } : req
+          req.id === requestId ? { ...req, status: "approved" } : req
         ));
         setSelectedRequest(null);
+        console.log(`Request ${requestId} approved successfully for doctor ${doctorId}`);
+      } else {
+        console.error('Approval failed:', response.message);
       }
     } catch (error) {
       console.error("Failed to approve request:", error);
@@ -104,17 +132,33 @@ const AdminRequests = () => {
     }
   };
 
-  const handleReject = async (id: number) => {
+  const handleReject = async (requestId: number) => {
     try {
-      setActionLoading(id);
-      const response = await apiService.rejectJoinRequest(id);
+      setActionLoading(requestId);
+      
+      // Find the request to get the correct doctor/user ID
+      const request = requestsData.find(req => req.id === requestId);
+      if (!request) {
+        console.error('Request not found:', requestId);
+        return;
+      }
+
+      // Use doctor_id or user_id if available, otherwise use the request id
+      const doctorId = request.doctor_id || request.user_id || requestId;
+      console.log(`Rejecting request ${requestId} with doctor ID: ${doctorId}`);
+      
+      const response = await apiService.updateDoctorStatus(doctorId, "rejected");
+      console.log('Reject response:', response);
       
       if (response.success) {
         // Update the request status locally
         setRequestsData(prev => prev.map(req => 
-          req.id === id ? { ...req, status: "rejected" } : req
+          req.id === requestId ? { ...req, status: "rejected" } : req
         ));
         setSelectedRequest(null);
+        console.log(`Request ${requestId} rejected successfully for doctor ${doctorId}`);
+      } else {
+        console.error('Rejection failed:', response.message);
       }
     } catch (error) {
       console.error("Failed to reject request:", error);

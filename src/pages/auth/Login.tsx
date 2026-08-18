@@ -51,14 +51,78 @@ const Login = () => {
       });
 
       if (response.success) {
-        // Check if email is verified
         const user = response.user;
+        console.log("User data:", user);
+        console.log("User status (حالة المستخدم العامة):", user?.status);
+        console.log("User role:", user?.role);
+        console.log("Doctor status (حالة الطبيب الخاصة):", user?.doctor_status);
+        
+        // 1. التحقق من تفعيل البريد الإلكتروني
         if (user?.email_verified_at === null) {
           setError("يرجى تفعيل حسابك عبر الرابط المرسل إلى بريدك الإلكتروني");
           return;
         }
 
-        // Check user role and redirect accordingly
+        // 2. التحقق من حالة المستخدم العامة (User Status)
+        // هذه الحالة تنطبق على جميع المستخدمين (مريض، طبيب، مدير)
+        if (user?.status === 'banned') {
+          setError("تم حظر حسابك. يرجى التواصل مع الإدارة للمزيد من المعلومات");
+          return;
+        }
+
+        // 3. التحقق من حالة الطبيب الخاصة (Doctor Status)
+        // هذه الحالة تنطبق فقط على الأطباء
+        if (user?.role === 'doctor') {
+          console.log("Doctor status check:", user?.doctor_status);
+          
+          // إذا لم تكن حالة الطبيب موجودة في استجابة تسجيل الدخول، جلبها من جدول doctors
+          let doctorStatus = user?.doctor_status;
+          if (!doctorStatus) {
+            console.log("Doctor status not in login response, fetching from doctor profile...");
+            try {
+              // استخدام endpoint doctor profile الذي يُرجع بيانات من جدول doctors
+              const profileResponse = await apiService.getDoctorProfile();
+              if (profileResponse.success && profileResponse.data) {
+                // الحالة من جدول doctors تسمى 'status' وليس 'doctor_status'
+                doctorStatus = profileResponse.data.status || profileResponse.data.doctor_status;
+                console.log("Fetched doctor status from profile:", doctorStatus);
+                // تحديث البيانات المحلية
+                const updatedUser = { ...user, doctor_status: doctorStatus };
+                localStorage.setItem('userData', JSON.stringify(updatedUser));
+              }
+            } catch (error) {
+              console.error("Failed to fetch doctor profile:", error);
+              // إذا فشل جلب البروفايل، افترض pending كحالة آمنة
+              doctorStatus = 'pending';
+              console.log("Defaulting to pending status due to error");
+            }
+          }
+          
+          console.log("Final doctor status:", doctorStatus);
+          
+          if (doctorStatus === 'pending') {
+            console.log("Doctor is pending - blocking access");
+            setError("حسابك قيد المراجعة. يرجى الانتظار حتى يتم قبول طلب انضمامك من قبل الإدارة");
+            return;
+          }
+          
+          if (doctorStatus === 'rejected') {
+            console.log("Doctor is rejected - blocking access");
+            setError("تم رفض طلب انضمامك للمنصة. يرجى التواصل مع الإدارة للمزيد من المعلومات");
+            return;
+          }
+          
+          // الطبيب يجب أن يكون approved للوصول للداشبورد
+          if (doctorStatus !== 'approved') {
+            console.log("Doctor status is not approved - blocking access");
+            setError("حسابك غير مفعل. يرجى التواصل مع الإدارة");
+            return;
+          }
+          
+          console.log("Doctor is approved - allowing access");
+        }
+
+        // 4. التوجيه حسب الدور
         if (user?.role === 'doctor') {
           navigate('/doctor');
         } else if (user?.role === 'admin') {

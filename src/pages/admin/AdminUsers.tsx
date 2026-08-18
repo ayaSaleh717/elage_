@@ -20,12 +20,15 @@ interface User {
   email: string;
   phone: string | null;
   role: "doctor" | "patient" | "admin";
-  status: "active" | "suspended" | "pending";
+  // User Status - حالة المستخدم العامة
+  status: "active" | "banned" | "pending";
   joined_at: string;
   latitude: string | null;
   longitude: string | null;
   specialization: string | null;
   consultations_count: number | null;
+  // Doctor Status - حالة الطبيب الخاصة (فقط للأطباء)
+  doctor_status?: "approved" | "pending" | "rejected";
 }
 
 
@@ -38,7 +41,7 @@ const roleColors: Record<string, string> = {
 
 const statusColors: Record<string, string> = {
   active: "bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400",
-  suspended: "bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400",
+  banned: "bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400",
   pending: "bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400",
 };
 
@@ -101,9 +104,9 @@ const AdminUsers = () => {
       if (response.success) {
         // Update the user status locally
         setUsersData(prev => prev.map(user => 
-          user.id === userId ? { ...user, status: "suspended" } : user
+          user.id === userId ? { ...user, status: "banned" } : user
         ));
-        console.log('User status updated to suspended');
+        console.log('User status updated to banned');
       }
     } catch (error) {
       console.error("Failed to ban user:", error);
@@ -156,7 +159,7 @@ const AdminUsers = () => {
 
   const statusLabels: Record<string, string> = {
     active: "نشط",
-    suspended: "معلق",
+    banned: "محظور",
     pending: "قيد الانتظار",
   };
 
@@ -188,9 +191,9 @@ const AdminUsers = () => {
         <div className="bg-white dark:bg-slate-800 rounded-xl p-3 sm:p-4 border border-slate-100 dark:border-slate-700 shadow-sm">
           <div className="flex items-center gap-2 mb-1">
             <Ban className="w-4 h-4 text-red-500" />
-            <span className="text-[10px] sm:text-xs text-muted-foreground">معلقون</span>
+            <span className="text-[10px] sm:text-xs text-muted-foreground">محظورون</span>
           </div>
-          <p className="text-lg sm:text-2xl font-bold text-foreground">{isLoading ? "-" : usersData.filter(u => u.status === "suspended").length}</p>
+          <p className="text-lg sm:text-2xl font-bold text-foreground">{isLoading ? "-" : usersData.filter(u => u.status === "banned").length}</p>
         </div>
       </div>
 
@@ -225,7 +228,7 @@ const AdminUsers = () => {
           </div>
           {/* Status Filter */}
           <div className="flex gap-1.5 overflow-x-auto pb-1">
-            {["الكل", "active", "suspended", "pending"].map((status) => (
+            {["الكل", "active", "banned", "pending"].map((status) => (
               <Button
                 key={status}
                 variant={filterStatus === status ? "default" : "outline"}
